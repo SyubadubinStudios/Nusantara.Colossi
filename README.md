@@ -40,6 +40,20 @@ Built with **.NET 10**, **Avalonia UI** and **Three.Net** (a Rust/wgpu renderer)
 - **2–4 player co-op** over LAN or direct IP. The host simulates the guardian, and every hunter climbs with their own local control.
 - **Fully bilingual**: Bahasa Indonesia and English, switchable at any time.
 
+## Download
+
+Get the latest build from the **[Releases page](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/latest)**. Version 0.1.0:
+
+| Platform | File | Notes |
+|---|---|---|
+| Windows 10/11 (x64) | [Installer (.exe)](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-win-x64-setup.exe) · [Portable (.zip)](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-win-x64.zip) | Tested. The installer is not code-signed, so SmartScreen may warn: choose **More info → Run anyway**. |
+| macOS (Apple Silicon) | [macos-arm64.zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-macos-arm64.zip) | Unzip, then right-click the app → **Open** (or run `xattr -dr com.apple.quarantine "Nusantara Colossi.app"`). Not yet tested on a real Mac. |
+| macOS (Intel) | [macos-x64.zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-macos-x64.zip) | Same as above. |
+| Linux (x86_64) | [AppImage](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-x86_64.AppImage) | `chmod +x NusantaraColossi-0.1.0-x86_64.AppImage`, then run it. Needs Vulkan. Not yet tested on real hardware. |
+| Android 10+ (arm64) | [APK](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-android.apk) | Allow installs from unknown sources. **Experimental**: on a Mali-G51 tablet it ran at about 3 FPS. A mid-range or better GPU is needed. |
+
+Every build needs a GPU with DirectX 12, Vulkan or Metal. The [source-assets zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-source-assets.zip) (about 470 MB) holds the Blender and Rodin source files for modders; you don't need it to play.
+
 ## Quick start
 
 Requirements: .NET SDK 10.0.4xx and a GPU with DirectX 12, Vulkan or Metal.
@@ -51,7 +65,7 @@ dotnet run --project src/NusantaraColossi.Desktop -c Release
 | Command | Purpose |
 |---|---|
 | `dotnet build NusantaraColossi.slnx` | Build everything, including the Android head when its workload is installed |
-| `dotnet test` | Run the 54 simulation tests |
+| `dotnet test` | Run all tests: 82 simulation tests plus 3 co-op tests over loopback UDP |
 | `dotnet run --project tools/NusantaraColossi.AudioForge` | Regenerate all music and sound effects into `assets/audio` |
 | `dotnet run --project src/NusantaraColossi.Desktop -- --screenshot docs/images --lang en` | Capture the documentation screenshots |
 | `dotnet build src/NusantaraColossi.Android -c Release` | Build the Android APK (needs the .NET Android workload) |
@@ -137,6 +151,20 @@ Dibuat dengan **.NET 10**, **Avalonia UI**, dan **Three.Net** (renderer Rust/wgp
 - **Co-op 2–4 pemain** lewat LAN atau IP langsung. Host menjalankan simulasi Penjaga, dan setiap pemburu memanjat dengan kendali lokalnya sendiri.
 - **Dua bahasa penuh**: Bahasa Indonesia dan English, bisa diganti kapan saja.
 
+### Unduh
+
+Unduh build terbaru dari **[halaman Releases](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/latest)**. Versi 0.1.0:
+
+| Platform | Berkas | Catatan |
+|---|---|---|
+| Windows 10/11 (x64) | [Installer (.exe)](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-win-x64-setup.exe) · [Portabel (.zip)](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-win-x64.zip) | Sudah diuji. Installer belum ditandatangani, jadi SmartScreen bisa memberi peringatan: pilih **More info → Run anyway**. |
+| macOS (Apple Silicon) | [macos-arm64.zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-macos-arm64.zip) | Ekstrak, lalu klik kanan aplikasinya → **Open** (atau jalankan `xattr -dr com.apple.quarantine "Nusantara Colossi.app"`). Belum diuji di Mac sungguhan. |
+| macOS (Intel) | [macos-x64.zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-macos-x64.zip) | Sama seperti di atas. |
+| Linux (x86_64) | [AppImage](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-x86_64.AppImage) | `chmod +x NusantaraColossi-0.1.0-x86_64.AppImage`, lalu jalankan. Butuh Vulkan. Belum diuji di perangkat sungguhan. |
+| Android 10+ (arm64) | [APK](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-android.apk) | Izinkan instalasi dari sumber tidak dikenal. **Eksperimental**: di tablet ber-GPU Mali-G51 hanya sekitar 3 FPS. Butuh GPU kelas menengah ke atas. |
+
+Semua build butuh GPU dengan DirectX 12, Vulkan, atau Metal. [Zip source-assets](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-source-assets.zip) (sekitar 470 MB) berisi berkas sumber Blender dan Rodin untuk modder; tidak diperlukan untuk bermain.
+
 ### Mulai cepat
 
 Kebutuhan: .NET SDK 10.0.4xx dan GPU dengan DirectX 12, Vulkan, atau Metal.
@@ -148,7 +176,7 @@ dotnet run --project src/NusantaraColossi.Desktop -c Release
 | Perintah | Fungsi |
 |---|---|
 | `dotnet build NusantaraColossi.slnx` | Build semua proyek, termasuk Android jika workload-nya terpasang |
-| `dotnet test` | Jalankan 54 tes simulasi |
+| `dotnet test` | Jalankan semua tes: 82 tes simulasi plus 3 tes co-op lewat UDP loopback |
 | `dotnet run --project tools/NusantaraColossi.AudioForge` | Buat ulang semua musik dan efek suara ke `assets/audio` |
 | `dotnet run --project src/NusantaraColossi.Desktop -- --screenshot docs/images --lang id` | Ambil tangkapan layar untuk dokumentasi |
 | `dotnet build src/NusantaraColossi.Android -c Release` | Build APK Android (butuh workload .NET Android) |
