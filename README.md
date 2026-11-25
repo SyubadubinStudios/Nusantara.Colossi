@@ -81,6 +81,7 @@ On Android, the left half of the screen is a floating stick and the right half c
 | Architecture | [docs/en/architecture.md](docs/en/architecture.md) | [docs/id/arsitektur.md](docs/id/arsitektur.md) |
 | Building & platforms | [docs/en/building.md](docs/en/building.md) | [docs/id/build.md](docs/id/build.md) |
 | Assets & audio pipeline | [docs/en/assets.md](docs/en/assets.md) | [docs/id/aset.md](docs/id/aset.md) |
+| Marketing kit (social posts) | [docs/marketing/posts-en.md](docs/marketing/posts-en.md) | [docs/marketing/posts-id.md](docs/marketing/posts-id.md) |
 
 See also [PLAN.md](PLAN.md) for the roadmap and [Progress.md](Progress.md) for development tracking.
 
@@ -170,4 +171,4 @@ Di Android, separuh kiri layar berfungsi sebagai stik mengambang dan separuh kan
 
 ### Dokumentasi
 
-[Panduan pemain](docs/id/panduan-pemain.md) · [Desain game](docs/id/desain-game.md) · [Arsitektur](docs/id/arsitektur.md) · [Build & platform](docs/id/build.md) · [Pipeline aset & audio](docs/id/aset.md) · [PLAN.md](PLAN.md) · [Progress.md](Progress.md)
+[Panduan pemain](docs/id/panduan-pemain.md) · [Desain game](docs/id/desain-game.md) · [Arsitektur](docs/id/arsitektur.md) · [Build & platform](docs/id/build.md) · [Pipeline aset & audio](docs/id/aset.md) · [Paket marketing](docs/marketing/README.md#bahasa-indonesia) · [PLAN.md](PLAN.md) · [Progress.md](Progress.md)

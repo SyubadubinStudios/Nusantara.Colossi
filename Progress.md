@@ -52,6 +52,11 @@ The project moved to `C:\experiment\syubadubin\Nusantara.Colossi` (GitHub: Syuba
   - `NC_SHOT_CINEMA=1` captures the victory cinematic and photo mode; `NC_SHOT_SETTINGS=1` captures the settings screens.
   - `NC_DATA_DIR` keeps test runs out of the real profile.
 
+- **Credits**: a cinematic scrolling roll over the 3D stage that names every guardian and comes to rest on a gold kawung seal. Hold Enter, Space, touch or gamepad South to speed it up.
+- **Marketing kit** (`docs/marketing`): 7 social posts in Indonesian and English (12 images per language, in 16:9, 4:5, 9:16 and 1:1) with captions per platform and a two-week plan.
+  - The 2D concept art comes from Rodin GPT Image Flare and is labelled "CONCEPT ART" on every image. Post 07 is a real screenshot.
+  - `compose_posts.py` rebuilds every image.
+
 ### Known gaps (honest status)
 
 - **Guardian bodies** are still procedural sculpted boxes; only the heads are generated models. Full body meshes (Rodin → retopology → skinned to the part pivots) are the largest open item.
