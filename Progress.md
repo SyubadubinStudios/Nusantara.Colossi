@@ -32,13 +32,33 @@ The project moved to `C:\experiment\syubadubin\Nusantara.Colossi` (GitHub: Syuba
   - Reconnect with slot reclaim by token.
   - Host migration to the lowest client slot.
 
+### Closing the gaps (same day, after v0.1.0)
+
+- **Co-op**:
+  - Vehicles and the glider are synced (protocol 3). Vehicles are now indexed by hunter slot, so peers agree on whose bike is whose.
+  - `tests/NusantaraColossi.Net.Tests` runs real UDP sessions over loopback: join, snapshots, walking, a ridden bike, and host migration (about 12 s). These tests run in CI on all three OSes.
+- **Map**: the secret region stays hidden until all eight guardians fall, and the pager labels it "Unknown signal".
+- **Voice**: the 5 new GARUDA lines are recorded in Indonesian, and English versions exist for all 11 lines (ElevenLabs "Aria").
+- **Settings**: Fluent sliders and toggles use the prada-gold accent. Checked in screenshots, including high contrast at 130 %.
+- **Heads**: komodo, leviathan and kapal were regenerated with Rodin as full 3D heads and processed to about 1 MB each.
+- **Arka**:
+  - 15 procedural clips (`arka_anim.py`, applied by `reanimate_arka.py`), checked on Blender contact sheets and in game. Death, Dodge and StabRelease hold their last frame.
+  - Climbing hand IK (two-bone) plants wrists near the surface onto it.
+- **Victory**: a collapse cinematic (wide orbit, HUD hidden), then an inscription close-up behind the result card.
+- **Photo mode**: in the pause menu for solo hunts. Saves PNGs to `Pictures/Nusantara Colossi`.
+- **Arena rim**: instanced cliff outcrops in every biome except the city. Raja Ampat's karst towers now stand on the rim.
+- **Screenshot tours** (`--screenshot`) gained new environment options:
+  - `NC_SHOT_REGIONS=Flores,Banda` captures only those hunts, and `NC_SHOT_LATE=1` adds later frames.
+  - `NC_SHOT_CINEMA=1` captures the victory cinematic and photo mode; `NC_SHOT_SETTINGS=1` captures the settings screens.
+  - `NC_DATA_DIR` keeps test runs out of the real profile.
+
 ### Known gaps (honest status)
 
-- **Arka's clips were re-authored** (`assets/sources/blender/arka_anim.py`, applied with `reanimate_arka.py`): 15 clips, among them Sprint, Fall, Dodge, ClimbIdle, StabRelease, Swim, Death, Ride and Glide. They are procedural keyframes, not motion capture, and were checked on Blender contact sheets plus one in-game run shot. Death, Dodge and StabRelease play once and hold their last frame. The flat-backed heads (komodo-agung, leviathan, kapal-majapahit) have been replaced by Rodin v2 regenerations modelled in the round.
-- **The accessibility and co-op work was also cut short by the usage limit.** It builds, and its unit tests pass. The settings screen has been checked in screenshots (Fluent controls now use the prada-gold accent instead of Windows blue). loopback integration tests now cover join, snapshots, vehicles and host migration over real UDP sockets, but nothing has been tried across two machines yet.
-- **The CI and release workflows have never run on GitHub** before this push. Linux and macOS packages are untested on real machines.
-- **Milestone 2 visual items are still open:** collapse cinematics, photo mode, cliff edge walls, hand IK and full guardian body meshes.
-- **Heavy 3D sources stay out of git:** the `.blend` and 2K/raw GLB files in `assets/sources`. They are attached to the release as `source-assets` instead.
+- **Guardian bodies** are still procedural sculpted boxes; only the heads are generated models. Full body meshes (Rodin → retopology → skinned to the part pivots) are the largest open item.
+- **Arka's clips are procedural keyframes**, not motion capture or hand-keyed animation. Hand IK has been seen only in autopilot screenshots (no broken limbs) and has not been tuned by eye in play.
+- **Co-op has not been tried across two machines** or through NAT. Only loopback has been tested.
+- **Linux, macOS and Android packages** build in CI and are attached to the release, but have not been run on real hardware or a device.
+- **Heavy 3D sources stay out of git**: the `.blend` files and raw GLBs in `assets/sources`. They are attached to releases as `source-assets`.
 
 ## 2026-11-25: Vertical slice
 
