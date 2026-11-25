@@ -108,25 +108,54 @@ def roughen(floor):
 
 
 FILL = 0.75  # how far each part's mesh is stretched toward filling its collider box (0 = untouched)
+BLEND = 0.05  # width of the blend between neighbouring parts' stretches, as a fraction of rig height
 
 
-def fill_box(local, centre, half):
+def fill_params(local, centre, half):
     """
-    Stretch and shift a part's mesh toward its box, so the climbable box faces sit close to the
-    visible surface (otherwise Arka can hang in mid-air off a thin limb). Scale per axis is clamped
-    to 0.6–1.6 so a part never distorts badly; FILL blends between the raw fit and a full box fit.
+    Per-part stretch toward the box, so the climbable box faces sit close to the visible surface
+    (otherwise Arka can hang in mid-air off a thin limb). Scale per axis is clamped to 0.6-1.6 so a
+    part never distorts badly; FILL blends between the raw fit and a full box fit.
     """
     lo, hi = local.min(0), local.max(0)
     ext = np.maximum(hi - lo, 1e-4)
-    scale = np.clip((2 * half) / ext, 0.6, 1.6)
-    scale = 1 + (scale - 1) * FILL
+    scale = 1 + (np.clip((2 * half) / ext, 0.6, 1.6) - 1) * FILL
     mid = (lo + hi) / 2
-    target = mid + (centre - mid) * FILL
-    return (local - mid) * scale + target
+    return mid, scale, mid + (centre - mid) * FILL
 
 
-def split_export(ob, assign, boxes, path, max_tex):
+def deform(ob, assign, boxes, height):
+    """
+    Apply every part's stretch as one smooth field over the whole mesh, before it is split.
+    Stretching each piece on its own tore the body apart wherever a piece's faces did not match its
+    box (the Ijen warden's thighs belong to the pelvis piece, so pelvis and legs pulled apart).
+    Each vertex now moves by a blend of the parts' stretches, weighted by its distance to each box.
+    The field depends only on position, so the two copies of a seam vertex land on the same spot.
+    """
+    me = ob.data
+    g = to_game(verts(ob)); hom = np.c_[g, np.ones(len(g))]
+    loop_v = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get("vertex_index", loop_v)
+    totals = np.empty(len(me.polygons), dtype=np.int64); me.polygons.foreach_get("loop_total", totals)
+    loop_part = np.repeat(assign, totals)
+    disp = np.zeros((len(g), len(boxes), 3))
+    for j, (M, inv, c, h) in enumerate(boxes):
+        mine = np.unique(loop_v[loop_part == j])
+        local = (hom @ inv)[:, :3]
+        if len(mine) == 0:
+            continue
+        mid, scale, target = fill_params(local[mine], c, h)
+        moved = np.c_[(local - mid) * scale + target, np.ones(len(g))] @ M
+        disp[:, j] = moved[:, :3] - g
+    sd = signed_distances(g, boxes)
+    w = np.exp(-(sd - sd.min(axis=1, keepdims=True)) / (BLEND * height))
+    w /= w.sum(axis=1, keepdims=True)
+    out = g + np.einsum("vj,vjk->vk", w, disp)
+    me.vertices.foreach_set("co", to_blender(out).ravel()); me.update()
+
+
+def split_export(ob, assign, boxes, path, max_tex, height):
     """One object per part, vertices moved into the part's pivot frame; export all as one GLB."""
+    deform(ob, assign, boxes, height)
     parts = []
     for j, (M, inv, _, _) in enumerate(boxes):
         faces = np.nonzero(assign == j)[0]
@@ -140,7 +169,6 @@ def split_export(ob, assign, boxes, path, max_tex):
         bm.to_mesh(part.data); bm.free()
         co = verts(part)
         local = (np.c_[to_game(co), np.ones(len(co))] @ inv)[:, :3]
-        local = fill_box(local, boxes[j][2], boxes[j][3])
         part.data.vertices.foreach_set("co", to_blender(local).ravel())
         part.data.update()
         parts.append(part)
@@ -194,7 +222,7 @@ def process(gid):
     # Keep a copy for the LOD before splitting consumes the object.
     # (Mesh data only: an unlinked datablock is not exported with the full body.)
     lod_mesh = ob.data.copy()
-    n = split_export(ob, face_assignment(ob, boxes), boxes, path, 1024)
+    n = split_export(ob, face_assignment(ob, boxes), boxes, path, 1024, rig["height"])
     validate_counts = os.path.getsize(path)
     # LOD: clear the scene, rebuild an object from the saved mesh, decimate, split, export.
     for o in list(bpy.data.objects):
@@ -202,7 +230,7 @@ def process(gid):
     lod = bpy.data.objects.new(gid, lod_mesh); bpy.context.collection.objects.link(lod)
     t2 = decimate(lod, LOD_TRIS)
     lod_path = os.path.join(OUT, "lod1", gid + ".glb")
-    split_export(lod, face_assignment(lod, boxes), boxes, lod_path, 512)
+    split_export(lod, face_assignment(lod, boxes), boxes, lod_path, 512, rig["height"])
     print("BODY", gid, "yaw", best[1], "score %.2f" % best[0], "tris", t0, "->", t1, "lod", t2,
           "parts", n, "/", len(boxes), "bytes", validate_counts, os.path.getsize(lod_path))
 

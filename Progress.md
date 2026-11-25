@@ -2,6 +2,20 @@
 
 *Dibuat oleh Ariana Mischa Fadhila dari Syubadubin Studios · Made by Ariana Mischa Fadhila of Syubadubin Studios*
 
+## 2026-11-25 (late night): v0.3.1, body fixes
+
+### Done
+
+- **Torn bodies fixed.** In v0.3.0 each part's mesh was stretched toward its own collider box independently. Where a part's faces did not match its box, neighbouring pieces pulled apart. The Ijen warden's thighs belonged to the pelvis piece, so its legs floated free. The Majapahit ship and the Leviathan were also broken into chunks. `process_bodies.py` now blends every part's stretch into one smooth field over the whole mesh, weighted by distance to each box, before splitting. The two copies of a seam vertex therefore land on the same spot. All nine bodies were reprocessed and checked in the gallery and in Bromo, Ijen and Kalimantan hunt captures.
+- **Ijen warden matte.** A per-guardian roughness floor (`MATTE`, 0.55) lifts its roughness from 0.27 to 0.67.
+- Doc screenshots and marketing posts were regenerated.
+
+### Known gaps (honest status)
+
+- Bodies are still rigid per part: seams are closed in the rest pose, but can open a little when a limb swings far.
+- The orangutan's leg colliders still do not hug the visible legs everywhere. In Kalimantan, Arka can grip slightly off the mesh between its legs.
+- The v0.2.0 gaps below are still open (Android on a mid-range device, co-op across machines, Linux/macOS hardware, hand IK by eye, the blank first 3D frame).
+
 ## 2026-11-25 (night): v0.3.0, guardian bodies
 
 ### Done

@@ -44,9 +44,10 @@ Potret dan key art dibuat dengan `GenerateImageWithGptImageFlare`. Setiap prompt
   1. `dotnet run tools/rigdump/rigdump.cs -- assets/sources/rodin/rigs.json` menulis matriks setiap bagian rig dalam pose diam.
   2. Skrip menyesuaikan setiap model tubuh Rodin (`assets/sources/rodin/bodies/<id>.glb`) ke batas pose diam rig. Yaw 0 menjadi bawaan karena model Rodin menghadap depan; putaran seperempat hanya dicoba jika sumbu panjangnya tidak cocok.
   3. Mesh di-decimate, lalu setiap face diberikan ke kotak bagian yang paling dekat dengan pusatnya. Bagian yang tidak kebagian face mengambil face di dalam kotaknya sendiri.
-  4. Skrip menulis satu objek `part-<i>` per bagian, dengan verteks di ruang pivot bagian itu.
-  5. Di game, setiap node bagian dipindah ke bawah pivotnya dan mesh kotak pahatannya dilepas. Node kotak tetap ada, karena inti menempel di sana dan kotak tetap menjadi collider panjat.
-  6. Kualitas Low hanya memuat LOD. Kualitas yang lebih tinggi beralih ke LOD di luar sekitar tiga kali tinggi Penjaga.
+  4. Tubuh direntangkan mendekati kotak collider supaya Arka berpegangan pada permukaan yang terlihat. Rentangan tiap bagian (skala dibatasi 0,6–1,6, sejauh 75%) dicampur ke seluruh mesh menurut jarak ke tiap kotak, sehingga sambungan antarbagian tetap tertutup. Perbaikan per Penjaga juga ada di sini: `MATTE` menaikkan batas bawah kekasaran model yang terlalu mengilap (Penjaga Ijen).
+  5. Skrip menulis satu objek `part-<i>` per bagian, dengan verteks di ruang pivot bagian itu.
+  6. Di game, setiap node bagian dipindah ke bawah pivotnya dan mesh kotak pahatannya dilepas. Node kotak tetap ada, karena inti menempel di sana dan kotak tetap menjadi collider panjat.
+  7. Kualitas Low hanya memuat LOD. Kualitas yang lebih tinggi beralih ke LOD di luar sekitar tiga kali tinggi Penjaga.
 - Tanpa model tubuh, GLB kepala diputar agar menghadap +Z dan diskalakan seragam ke dalam kotak kepala. Balok kepala prosedural mengecil menjadi 82% dan tetap menjadi inti kepala yang cocok dengan tabrakan.
 
 ## Audio: AudioForge

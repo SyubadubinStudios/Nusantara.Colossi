@@ -42,15 +42,15 @@ Built with **.NET 10**, **Avalonia UI** and **Three.Net** (a Rust/wgpu renderer)
 
 ## Download
 
-Get the latest build from the **[Releases page](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/latest)**. Version 0.3.0:
+Get the latest build from the **[Releases page](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/latest)**. Version 0.3.1:
 
 | Platform | File | Notes |
 |---|---|---|
-| Windows 10/11 (x64) | [Installer (.exe)](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.0/NusantaraColossi-0.3.0-win-x64-setup.exe) · [Portable (.zip)](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.0/NusantaraColossi-0.3.0-win-x64.zip) | Tested. The installer is not code-signed, so SmartScreen may warn: choose **More info → Run anyway**. |
-| macOS (Apple Silicon) | [macos-arm64.zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.0/NusantaraColossi-0.3.0-macos-arm64.zip) | Unzip, then right-click the app → **Open** (or run `xattr -dr com.apple.quarantine "Nusantara Colossi.app"`). Not yet tested on a real Mac. |
-| macOS (Intel) | [macos-x64.zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.0/NusantaraColossi-0.3.0-macos-x64.zip) | Same as above. |
-| Linux (x86_64) | [AppImage](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.0/NusantaraColossi-0.3.0-x86_64.AppImage) | `chmod +x NusantaraColossi-0.3.0-x86_64.AppImage`, then run it. Needs Vulkan. Not yet tested on real hardware. |
-| Android 10+ (arm64) | [APK](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.0/NusantaraColossi-0.3.0-android.apk) | Allow installs from unknown sources. **Experimental**: on a Mali-G51 tablet v0.1.0 ran at about 3 FPS; v0.2.0 adds a lighter mobile preset that has not been measured on a device yet. A mid-range or better GPU is recommended. |
+| Windows 10/11 (x64) | [Installer (.exe)](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.1/NusantaraColossi-0.3.1-win-x64-setup.exe) · [Portable (.zip)](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.1/NusantaraColossi-0.3.1-win-x64.zip) | Tested. The installer is not code-signed, so SmartScreen may warn: choose **More info → Run anyway**. |
+| macOS (Apple Silicon) | [macos-arm64.zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.1/NusantaraColossi-0.3.1-macos-arm64.zip) | Unzip, then right-click the app → **Open** (or run `xattr -dr com.apple.quarantine "Nusantara Colossi.app"`). Not yet tested on a real Mac. |
+| macOS (Intel) | [macos-x64.zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.1/NusantaraColossi-0.3.1-macos-x64.zip) | Same as above. |
+| Linux (x86_64) | [AppImage](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.1/NusantaraColossi-0.3.1-x86_64.AppImage) | `chmod +x NusantaraColossi-0.3.1-x86_64.AppImage`, then run it. Needs Vulkan. Not yet tested on real hardware. |
+| Android 10+ (arm64) | [APK](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.1/NusantaraColossi-0.3.1-android.apk) | Allow installs from unknown sources. **Experimental**: on a Mali-G51 tablet v0.1.0 ran at about 3 FPS; v0.2.0 adds a lighter mobile preset that has not been measured on a device yet. A mid-range or better GPU is recommended. |
 
 Every build needs a GPU with DirectX 12, Vulkan or Metal. The [source-assets zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-source-assets.zip) (about 470 MB) (from v0.1.0, unchanged since) holds the Blender and Rodin source files for modders; you don't need it to play.
 
@@ -153,15 +153,15 @@ Dibuat dengan **.NET 10**, **Avalonia UI**, dan **Three.Net** (renderer Rust/wgp
 
 ### Unduh
 
-Unduh build terbaru dari **[halaman Releases](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/latest)**. Versi 0.3.0:
+Unduh build terbaru dari **[halaman Releases](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/latest)**. Versi 0.3.1:
 
 | Platform | Berkas | Catatan |
 |---|---|---|
-| Windows 10/11 (x64) | [Installer (.exe)](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.0/NusantaraColossi-0.3.0-win-x64-setup.exe) · [Portabel (.zip)](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.0/NusantaraColossi-0.3.0-win-x64.zip) | Sudah diuji. Installer belum ditandatangani, jadi SmartScreen bisa memberi peringatan: pilih **More info → Run anyway**. |
-| macOS (Apple Silicon) | [macos-arm64.zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.0/NusantaraColossi-0.3.0-macos-arm64.zip) | Ekstrak, lalu klik kanan aplikasinya → **Open** (atau jalankan `xattr -dr com.apple.quarantine "Nusantara Colossi.app"`). Belum diuji di Mac sungguhan. |
-| macOS (Intel) | [macos-x64.zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.0/NusantaraColossi-0.3.0-macos-x64.zip) | Sama seperti di atas. |
-| Linux (x86_64) | [AppImage](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.0/NusantaraColossi-0.3.0-x86_64.AppImage) | `chmod +x NusantaraColossi-0.3.0-x86_64.AppImage`, lalu jalankan. Butuh Vulkan. Belum diuji di perangkat sungguhan. |
-| Android 10+ (arm64) | [APK](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.0/NusantaraColossi-0.3.0-android.apk) | Izinkan instalasi dari sumber tidak dikenal. **Eksperimental**: di tablet ber-GPU Mali-G51, v0.1.0 hanya sekitar 3 FPS; v0.2.0 menambah preset mobile yang lebih ringan, tetapi belum diukur di perangkat. Disarankan GPU kelas menengah ke atas. |
+| Windows 10/11 (x64) | [Installer (.exe)](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.1/NusantaraColossi-0.3.1-win-x64-setup.exe) · [Portabel (.zip)](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.1/NusantaraColossi-0.3.1-win-x64.zip) | Sudah diuji. Installer belum ditandatangani, jadi SmartScreen bisa memberi peringatan: pilih **More info → Run anyway**. |
+| macOS (Apple Silicon) | [macos-arm64.zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.1/NusantaraColossi-0.3.1-macos-arm64.zip) | Ekstrak, lalu klik kanan aplikasinya → **Open** (atau jalankan `xattr -dr com.apple.quarantine "Nusantara Colossi.app"`). Belum diuji di Mac sungguhan. |
+| macOS (Intel) | [macos-x64.zip](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.1/NusantaraColossi-0.3.1-macos-x64.zip) | Sama seperti di atas. |
+| Linux (x86_64) | [AppImage](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.1/NusantaraColossi-0.3.1-x86_64.AppImage) | `chmod +x NusantaraColossi-0.3.1-x86_64.AppImage`, lalu jalankan. Butuh Vulkan. Belum diuji di perangkat sungguhan. |
+| Android 10+ (arm64) | [APK](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.3.1/NusantaraColossi-0.3.1-android.apk) | Izinkan instalasi dari sumber tidak dikenal. **Eksperimental**: di tablet ber-GPU Mali-G51, v0.1.0 hanya sekitar 3 FPS; v0.2.0 menambah preset mobile yang lebih ringan, tetapi belum diukur di perangkat. Disarankan GPU kelas menengah ke atas. |
 
 Semua build butuh GPU dengan DirectX 12, Vulkan, atau Metal. [Zip source-assets](https://github.com/SyubadubinStudios/Nusantara.Colossi/releases/download/v0.1.0/NusantaraColossi-0.1.0-source-assets.zip) (sekitar 470 MB) (dari v0.1.0, belum berubah) berisi berkas sumber Blender dan Rodin untuk modder; tidak diperlukan untuk bermain.
 
