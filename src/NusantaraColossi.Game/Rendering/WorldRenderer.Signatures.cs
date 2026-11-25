@@ -72,13 +72,36 @@ public sealed partial class WorldRenderer
             }
         }
 
-        // Vehicles: procedural trail bikes and jet skis, the hunter's colour on the tank.
+        // Vehicles are built on demand: a co-op peer's bike appears once that hunter joins.
+        SyncVehicleVisuals();
+
+        // The GARUDA glider: a cyan-edged wing above each hunter, hidden until opened.
+        var metal = Mat("vehicle-metal", () => MaterialOptions.Pbr(new Vector4(.12f, .13f, .14f, 1), .8f, .35f));
+        var wingMaterial = Mat("glider", () => MaterialOptions.Pbr(new Vector4(.85f, .7f, .35f, .92f), .3f, .4f) with { AlphaMode = AlphaMode.Blend, CullMode = CullMode.None, Emissive = new Vector3(.2f, .6f, .6f), EmissiveIntensity = .4f });
+        var edgeMaterial = Mat("glider-edge", () => MaterialOptions.Basic(new Vector4(.3f, .95f, .9f, 1)) with { EmissiveIntensity = 3 });
+        for (var i = 0; i < gliders.Length && i < hunters.Count; i++)
+        {
+            var wing = hunters[i].Root.CreateChild($"glider-{i}");
+            wing.Position = new Vector3(0, 2.2f, 0);
+            Mesh(box, wingMaterial, Vector3.Zero, new Vector3(4.6f, .05f, 1.3f), wing).CastShadow = true;
+            Mesh(box, edgeMaterial, new Vector3(0, 0, .66f), new Vector3(4.7f, .06f, .05f), wing);
+            Mesh(box, metal, new Vector3(0, -.45f, 0), new Vector3(.04f, .9f, .04f), wing);
+            wing.Visible = false;
+            gliders[i] = wing;
+        }
+    }
+
+
+    private void SyncVehicleVisuals()
+    {
+        // Procedural trail bikes and jet skis.
         var metal = Mat("vehicle-metal", () => MaterialOptions.Pbr(new Vector4(.12f, .13f, .14f, 1), .8f, .35f));
         var rubber = Mat("vehicle-rubber", () => MaterialOptions.Pbr(new Vector4(.03f, .03f, .03f, 1), 0, .9f));
         var paint = Mat("vehicle-paint", () => MaterialOptions.Pbr(new Vector4(.78f, .55f, .2f, 1), .4f, .3f));
         var glow = Mat("vehicle-glow", () => MaterialOptions.Basic(new Vector4(.3f, .95f, .9f, 1)) with { EmissiveIntensity = 3 });
-        for (var i = 0; i < Encounter.VehicleCount; i++)
+        while (vehicles.Count < Encounter.VehicleCount)
         {
+            var i = vehicles.Count;
             var kind = Encounter.Vehicles[i].Kind;
             var root = Scene.CreateNode(name: $"vehicle-{i}");
             var wheels = Array.Empty<Node>();
@@ -105,24 +128,12 @@ public sealed partial class WorldRenderer
             vehicles.Add((root, wheels, kind));
         }
 
-        // The GARUDA glider: a cyan-edged wing above each hunter, hidden until opened.
-        var wingMaterial = Mat("glider", () => MaterialOptions.Pbr(new Vector4(.85f, .7f, .35f, .92f), .3f, .4f) with { AlphaMode = AlphaMode.Blend, CullMode = CullMode.None, Emissive = new Vector3(.2f, .6f, .6f), EmissiveIntensity = .4f });
-        var edgeMaterial = Mat("glider-edge", () => MaterialOptions.Basic(new Vector4(.3f, .95f, .9f, 1)) with { EmissiveIntensity = 3 });
-        for (var i = 0; i < gliders.Length && i < hunters.Count; i++)
-        {
-            var wing = hunters[i].Root.CreateChild($"glider-{i}");
-            wing.Position = new Vector3(0, 2.2f, 0);
-            Mesh(box, wingMaterial, Vector3.Zero, new Vector3(4.6f, .05f, 1.3f), wing).CastShadow = true;
-            Mesh(box, edgeMaterial, new Vector3(0, 0, .66f), new Vector3(4.7f, .06f, .05f), wing);
-            Mesh(box, metal, new Vector3(0, -.45f, 0), new Vector3(.04f, .9f, .04f), wing);
-            wing.Visible = false;
-            gliders[i] = wing;
-        }
     }
 
     private void UpdateSignatures(float dt)
     {
         var e = Encounter;
+        if (vehicles.Count < e.VehicleCount) SyncVehicleVisuals();
         if (e.Blueprint.Signature == Signature.Flood && water is not null)
         {
             var flood = e.Flood;

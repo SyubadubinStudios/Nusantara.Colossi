@@ -51,6 +51,9 @@ public sealed class ArchipelagoMap : Control
     private static readonly IPen SelectPen = new Pen(Palette.Nadi, 1.5);
 
     public Profile? Profile { get; set; }
+
+    /// <summary>Regions drawn and selectable: the secret guardian stays hidden until its signal unlocks.</summary>
+    private IEnumerable<RegionDefinition> Shown => Profile?.VisibleRegions() ?? Regions.Main;
     public RegionId Selected { get; set; }
     public event Action<RegionId>? SelectionChanged;
 
@@ -109,7 +112,7 @@ public sealed class ArchipelagoMap : Control
 
         // Expedition route through beaten guardians, in canonical order.
         Point? previous = null;
-        foreach (var region in Regions.All)
+        foreach (var region in Shown)
         {
             if (Profile?.IsDefeated(region.ColossusId) != true) continue;
             var p = Map(a, region.MapPosition.X, region.MapPosition.Y);
@@ -117,7 +120,7 @@ public sealed class ArchipelagoMap : Control
             previous = p;
         }
 
-        foreach (var region in Regions.All)
+        foreach (var region in Shown)
         {
             var p = Map(a, region.MapPosition.X, region.MapPosition.Y);
             var unlocked = Profile?.IsUnlocked(region.Id) ?? true;
@@ -181,7 +184,7 @@ public sealed class ArchipelagoMap : Control
         var pos = e.GetPosition(this);
         RegionId? best = null;
         var bestDistance = 40.0;
-        foreach (var region in Regions.All)
+        foreach (var region in Shown)
         {
             var p = Map(a, region.MapPosition.X, region.MapPosition.Y);
             var d = Point.Distance(p, pos);

@@ -144,6 +144,36 @@ public class SignatureTests
     }
 
     [Fact]
+    public void CoopPeersSeeEachOthersVehicles()
+    {
+        var (host, _) = Hunt("kerbau-langit");
+        // A client in slot 1 builds its encounter with a placeholder for the host, like HuntScreen.Coop does.
+        var client = new Encounter(Regions.ForColossus("kerbau-langit"), Colossi.Get("kerbau-langit"), new EncounterOptions { IsAuthority = false });
+        client.Players.Add(new Player(0, "host") { IsRemote = true });
+        var rider = client.AddPlayer("tamu");
+        Assert.Equal(2, client.VehicleCount);
+        Assert.Equal(host.Vehicles[0].Position, client.Vehicles[0].Position);
+
+        rider.Reset(client.Vehicles[1].Position + new Vector3(1, 0, 0), 0);
+        var none = new PlayerInput { CameraForward = Vector3.UnitZ };
+        client.Step([none, new PlayerInput { InteractPressed = true, CameraForward = Vector3.UnitZ }], Dt);
+        Assert.Equal(1, rider.Riding);
+        for (var i = 0; i < 60; i++) client.Step([none, new PlayerInput { Move = new Vector2(0, 1), CameraForward = Vector3.UnitZ }], Dt);
+
+        Coop.ApplyRemotePlayer(host, Coop.ReadPlayerState(Coop.PlayerStatePacket(rider)));
+        Assert.Equal(2, host.VehicleCount);
+        Assert.Equal(1, host.Vehicles[1].Rider);
+        Assert.Equal(rider.Position, host.Vehicles[1].Position);
+        Assert.True(host.Players[1].IsRiding);
+        Assert.Equal(-1, host.Vehicles[0].Rider);
+
+        client.Step([none, new PlayerInput { InteractPressed = true, CameraForward = Vector3.UnitZ }], Dt);
+        Coop.ApplyRemotePlayer(host, Coop.ReadPlayerState(Coop.PlayerStatePacket(rider)));
+        Assert.Equal(-1, host.Vehicles[1].Rider);
+        Assert.False(host.Players[1].IsRiding);
+    }
+
+    [Fact]
     public void SeaArenasGetAJetSki()
     {
         var (e, _) = Hunt("kapal-majapahit");

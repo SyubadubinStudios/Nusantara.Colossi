@@ -120,12 +120,42 @@ public sealed class Encounter : IPlayerEnvironment
     public Player AddPlayer(string name, PlayerStats? stats = null)
     {
         var p = new Player(Players.Count, name) { Stats = stats ?? new PlayerStats() };
-        var spawn = Region.SpawnPoint + new Vector3(Players.Count * 2.5f - 3.75f * (Players.Count > 0 ? 1 : 0), 0, 0);
-        spawn.Y = Region.Height(spawn.X, spawn.Z);
+        var spawn = SpawnFor(p.Slot);
         p.Reset(spawn, 0);
         Players.Add(p);
-        AddVehicle(spawn, p.Slot);
+        EnsureVehicle(p.Slot);
         return p;
+    }
+
+    private Vector3 SpawnFor(int slot)
+    {
+        var spawn = Region.SpawnPoint + new Vector3(slot * 2.5f - 3.75f * (slot > 0 ? 1 : 0), 0, 0);
+        spawn.Y = Region.Height(spawn.X, spawn.Z);
+        return spawn;
+    }
+
+    /// <summary>
+    /// Vehicles are indexed by hunter slot, so every peer agrees which bike is whose even when players
+    /// joined in a different order. Parks one for every slot up to <paramref name="slot"/>.
+    /// </summary>
+    public void EnsureVehicle(int slot)
+    {
+        while (VehicleCount <= slot && VehicleCount < Vehicles.Length) AddVehicle(SpawnFor(VehicleCount), VehicleCount);
+    }
+
+    /// <summary>Co-op: mirror the vehicle a remote hunter reports riding.</summary>
+    public void ApplyRemoteVehicle(int slot, int riding, Vector3 position, float yaw, float speed)
+    {
+        for (var i = 0; i < VehicleCount; i++)
+            if (Vehicles[i].Rider == slot && i != riding) { Vehicles[i].Rider = -1; Vehicles[i].Speed = 0; }
+        if (riding < 0) return;
+        EnsureVehicle(riding);
+        if (riding >= VehicleCount) return;
+        ref var v = ref Vehicles[riding];
+        v.Rider = slot;
+        v.Position = position;
+        v.Yaw = yaw;
+        v.Speed = speed;
     }
 
     private void AddVehicle(Vector3 spawn, int slot)

@@ -55,8 +55,9 @@ public sealed class MapScreen : Screen
 
     private void Cycle(int step)
     {
-        var i = ((int)map.Selected + step + Regions.All.Length) % Regions.All.Length;
-        map.Selected = (RegionId)i;
+        var shown = Ctx.Profile.VisibleRegions().Select(r => r.Id).ToList();
+        var i = Math.Max(0, shown.IndexOf(map.Selected));
+        map.Selected = shown[(i + step + shown.Count) % shown.Count];
         BuildDossier();
     }
 
@@ -77,7 +78,7 @@ public sealed class MapScreen : Screen
         DockPanel.SetDock(next, Dock.Right);
         nav.Children.Add(prev);
         nav.Children.Add(next);
-        nav.Children.Add(Palette.Mono($"{(int)region.Id + 1:00} / 08 · {region.Place.Get().ToUpperInvariant()}", 11, Palette.Nadi).Also(t => { t.HorizontalAlignment = HorizontalAlignment.Center; t.VerticalAlignment = VerticalAlignment.Center; }));
+        nav.Children.Add(Palette.Mono(region.Secret ? $"{Loc.T("map.secret").ToUpperInvariant()} · {region.Place.Get().ToUpperInvariant()}" : $"{(int)region.Id + 1:00} / 08 · {region.Place.Get().ToUpperInvariant()}", 11, Palette.Nadi).Also(t => { t.HorizontalAlignment = HorizontalAlignment.Center; t.VerticalAlignment = VerticalAlignment.Center; }));
         s.Children.Add(nav);
 
         var portrait = Images.Load(AssetPaths.ColossusArt(guardian.Id), 760);

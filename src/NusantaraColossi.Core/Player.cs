@@ -102,6 +102,16 @@ public sealed class Player
     public bool IsRiding => Riding >= 0;
     /// <summary>The GARUDA glider wing is open.</summary>
     public bool Gliding { get; internal set; }
+
+    /// <summary>Last state of the ridden vehicle, sent to co-op peers.</summary>
+    public Vehicle VehicleState { get; private set; }
+
+    /// <summary>Co-op: a remote hunter's travel mode, as reported in its player state.</summary>
+    public void SetRemoteTravel(int riding, bool gliding)
+    {
+        Riding = riding;
+        Gliding = gliding;
+    }
     /// <summary>1 = full lungs. Drains while the head is under water (Leviathan dives, floods).</summary>
     public float Breath { get; internal set; } = 1;
     private bool breathWarned;
@@ -679,6 +689,7 @@ public sealed class Player
         if (env.GustStrength > 0) next += env.GustDirection * env.GustStrength * 1.5f * dt;
 
         vehicle.Position = next;
+        VehicleState = vehicle;
         Position = next;
         Velocity = heading * vehicle.Speed;
         Yaw = vehicle.Yaw;

@@ -13,11 +13,12 @@ namespace NusantaraColossi.Core;
 /// Protocol 2 (Milestone 4) adds: a client token and preferred slot in Hello (slot reclaim on reconnect),
 /// the guardian's AI clocks in Snapshot (so a client can take over as host), the Roster message (peer
 /// addresses for host migration) and the LAN discovery beacon.
+/// Protocol 3 adds the glider flag and the ridden vehicle (slot-indexed) to every player state.
 /// </remarks>
 public static class Coop
 {
     public const int MaxPlayers = 4;
-    public const byte ProtocolVersion = 2;
+    public const byte ProtocolVersion = 3;
     /// <summary>UDP port hosts broadcast their <see cref="Beacon"/> on. The game itself uses the host's chosen port.</summary>
     public const int DiscoveryPort = 27046;
     public const int DefaultGamePort = 27045;
@@ -38,7 +39,8 @@ public static class Coop
 
     public readonly record struct Welcome(int Slot, string ColossusId, bool Legend, DroneAbilities Abilities, int Seed);
 
-    public readonly record struct PlayerSnapshot(int Slot, PlayerMode Mode, Vector3 Position, float Yaw, Vector3 Up, Vector3 Facing, float Health, bool Charging, bool Moving, bool Standing, string Name);
+    public readonly record struct PlayerSnapshot(int Slot, PlayerMode Mode, Vector3 Position, float Yaw, Vector3 Up, Vector3 Facing, float Health, bool Charging, bool Moving, bool Standing, string Name,
+        bool Gliding = false, int Riding = -1, Vector3 VehiclePosition = default, float VehicleYaw = 0, float VehicleSpeed = 0);
 
     /// <summary>One hunter as the host sees it: clients keep this so they can find each other if the host drops.</summary>
     public readonly record struct RosterEntry(int Slot, string Name, string Address);
@@ -84,8 +86,16 @@ public static class Coop
         w.Vector(p.Up);
         w.Vector(p.Facing);
         w.Float(p.Health);
-        w.Byte((byte)((p.Charging ? 1 : 0) | (p.IsMoving ? 2 : 0) | (p.IsStanding ? 4 : 0)));
+        w.Byte((byte)((p.Charging ? 1 : 0) | (p.IsMoving ? 2 : 0) | (p.IsStanding ? 4 : 0) | (p.Gliding ? 8 : 0)));
         w.String(p.Name);
+        w.Byte((byte)(p.Riding + 1));
+        if (p.Riding >= 0)
+        {
+            var v = p.VehicleState;
+            w.Vector(v.Position);
+            w.Float(v.Yaw);
+            w.Float(v.Speed);
+        }
     }
 
     public static byte[] Snapshot(Encounter e)
@@ -220,7 +230,11 @@ public static class Coop
         var health = r.Float();
         var flags = r.Byte();
         var name = r.String();
-        return new(slot, mode, position, yaw, up, facing, health, (flags & 1) != 0, (flags & 2) != 0, (flags & 4) != 0, name);
+        var riding = r.Byte() - 1;
+        Vector3 vp = default; float vy = 0, vs = 0;
+        if (riding >= 0) { vp = r.Vector(); vy = r.Float(); vs = r.Float(); }
+        return new(slot, mode, position, yaw, up, facing, health, (flags & 1) != 0, (flags & 2) != 0, (flags & 4) != 0, name,
+            (flags & 8) != 0, riding, vp, vy, vs);
     }
 
     /// <summary>Client side: overwrite colossus, hazards and remote players from a host snapshot.</summary>
@@ -286,6 +300,9 @@ public static class Coop
         p.Charging = s.Charging;
         p.IsMoving = s.Moving;
         p.IsStanding = s.Standing;
+        p.SetRemoteTravel(s.Riding, s.Gliding);
+        e.EnsureVehicle(s.Slot);
+        e.ApplyRemoteVehicle(s.Slot, s.Riding, s.VehiclePosition, s.VehicleYaw, s.VehicleSpeed);
     }
 
     public static StabRequest ReadStab(ReadOnlySpan<byte> packet)
