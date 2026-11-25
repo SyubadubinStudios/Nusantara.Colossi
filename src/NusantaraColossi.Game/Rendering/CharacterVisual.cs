@@ -15,6 +15,9 @@ internal sealed class CharacterVisual
     private readonly Node body;
     private readonly Node? hips, torso, head, armL, armR, legL, legR, blade;
     private readonly Dictionary<string, AnimationPlayer> clips = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, float> durations = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>Clips that play once from the start and hold their last frame (all clips are loaded looping).</summary>
+    private static readonly HashSet<string> OneShots = new(StringComparer.OrdinalIgnoreCase) { "Death", "Dodge", "StabRelease" };
     private readonly AnimationMixer mixer = new();
     private string currentClip = "";
     private float phase;
@@ -43,6 +46,7 @@ internal sealed class CharacterVisual
                     var clip = scene.Animations[i];
                     var player = clip.Play(loop: true, weight: 0);
                     clips[clip.Name] = player;
+                    durations[clip.Name] = clip.Duration;
                 }
                 modelLoaded = true;
                 Play("Idle", 0);
@@ -97,13 +101,14 @@ internal sealed class CharacterVisual
         blade = Part(armR, cube, bladeMat, new Vector3(0, -.68f, .12f), new Vector3(.03f, .05f, .42f)); // keris-shaped energy blade
     }
 
-    private float stabRelease, dodgeHold;
+    private float stabRelease, dodgeHold, oneShotElapsed;
 
     private string Pick(string preferred, string fallback) => clips.ContainsKey(preferred) ? preferred : fallback;
 
     private void Play(string name, float fade)
     {
         if (currentClip == name || !clips.TryGetValue(name, out var next)) return;
+        if (OneShots.Contains(name)) { next.Time = 0; next.Speed = 1; oneShotElapsed = 0; }
         if (clips.TryGetValue(currentClip, out var previous)) mixer.CrossFade(previous, next, fade);
         else { next.Weight = 1; next.Time = 0; }
         currentClip = name;
@@ -130,7 +135,7 @@ internal sealed class CharacterVisual
         {
             // Preferred clip first, then fallbacks for older rigs that lack it.
             var horizontal = new Vector2(p.Velocity.X, p.Velocity.Z).Length();
-            if (p.PendingStabRelease) stabRelease = .35f;
+            if (p.PendingStabRelease) stabRelease = .4f;
             stabRelease = MathF.Max(0, stabRelease - dt);
             if (p.DodgeTimer > 0) dodgeHold = .5f;
             dodgeHold = MathF.Max(0, dodgeHold - dt);
@@ -148,6 +153,13 @@ internal sealed class CharacterVisual
                 : "Idle";
             Play(clip, clip is "Dodge" or "StabRelease" ? .08f : .18f);
             mixer.Update(dt);
+            // Count elapsed time ourselves: the looping player would wrap past the end between frames.
+            if (OneShots.Contains(currentClip) && clips.TryGetValue(currentClip, out var shot) && durations.TryGetValue(currentClip, out var length)
+                && (oneShotElapsed += dt) >= length - 1 / 60f)
+            {
+                shot.Time = length - 1 / 60f; // hold the final pose instead of looping
+                shot.Speed = 0;
+            }
             if (clips.TryGetValue("Climb", out var c)) c.Speed = p.IsMoving ? 1 : 0;
             if (clips.TryGetValue("Run", out var run)) run.Speed = Math.Clamp(horizontal / 5.5f, .6f, 1.6f);
             return;
