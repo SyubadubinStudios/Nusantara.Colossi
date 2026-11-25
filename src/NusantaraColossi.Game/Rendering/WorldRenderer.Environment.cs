@@ -73,6 +73,47 @@ public sealed partial class WorldRenderer
             case Biome.Crater: Crater(); break;
             case Biome.Sea: Sea(); break;
         }
+        RimCliffs();
+    }
+
+    /// <summary>
+    /// Dresses the terrain's rising rim as broken cliffs: a ring of instanced rock outcrops (six sculpted
+    /// shapes, randomly scaled and turned) seated into the slope, so the arena edge reads as rock, not a
+    /// smooth pale wall. Visual only: the rim is outside the playable ring.
+    /// </summary>
+    private void RimCliffs()
+    {
+        var region = Encounter.Region;
+        if (region.Biome == Biome.City) return; // the skyline already closes the horizon
+        var random = new Random(region.Seed + 77);
+        var moss = region.Biome switch { Biome.Rainforest or Biome.Terraces or Biome.Lagoon => .9f, Biome.Crater => 0f, _ => .35f };
+        var rock = Mat("rim-rock", () => StoneOptions(region.RockColor, .25f, new Vector3(.16f, .28f, .1f), moss, 51));
+        const int Shapes = 6;
+        var sets = new List<Matrix4x4>[Shapes];
+        for (var i = 0; i < Shapes; i++) sets[i] = [];
+        var count = Quality == 0 ? 56 : 88;
+        var tall = region.Biome is Biome.Lagoon or Biome.Hills or Biome.Sea ? 1.6f : region.Biome == Biome.Crater ? .8f : 1f;
+        for (var i = 0; i < count; i++)
+        {
+            var a = (i + random.NextSingle() * .8f) / count * Mathx.Tau;
+            var r = region.ArenaRadius * (1.08f + random.NextSingle() * .42f);
+            var x = MathF.Sin(a) * r;
+            var z = MathF.Cos(a) * r;
+            var scale = new Vector3(7 + random.NextSingle() * 11, (9 + random.NextSingle() * 15) * tall, 7 + random.NextSingle() * 11);
+            var ground = region.Height(x, z);
+            // Unit shape (half extent 1): sink a third of it into the slope.
+            var y = ground + scale.Y * .65f;
+            var tilt = Matrix4x4.CreateRotationX((random.NextSingle() - .5f) * .3f) * Matrix4x4.CreateRotationZ((random.NextSingle() - .5f) * .3f);
+            sets[i % Shapes].Add(Matrix4x4.CreateScale(scale) * tilt * Matrix4x4.CreateRotationY(a + random.NextSingle() * 1.5f) * Matrix4x4.CreateTranslation(x, y, z));
+        }
+        for (var i = 0; i < Shapes; i++)
+        {
+            if (sets[i].Count == 0) continue;
+            var node = Scene.AddMesh(MeshFactory.SculptedBox(Scene, Vector3.One, .6f, .3f, 300 + i, 9, 16), rock, name: $"rim-cliffs-{i}");
+            node.SetInstances(sets[i].ToArray());
+            node.CastShadow = false;
+            node.ReceiveShadow = true;
+        }
     }
 
     private void BuildObstacles()
@@ -335,7 +376,9 @@ public sealed partial class WorldRenderer
             var r = region.ArenaRadius * (1.2f + random.NextSingle() * .9f);
             var half = new Vector3(10 + random.NextSingle() * 18, 12 + random.NextSingle() * 22, 10 + random.NextSingle() * 18);
             var node = Scene.AddMesh(MeshFactory.SculptedBox(Scene, half, 6, 2.5f, i + 100, .25f, 12), karst);
-            node.Position = new Vector3(MathF.Sin(a) * r, half.Y - 4, MathF.Cos(a) * r);
+            // Raja Ampat's karst towers stand on the rim slope, not buried in it.
+            var (kx, kz) = (MathF.Sin(a) * r, MathF.Cos(a) * r);
+            node.Position = new Vector3(kx, MathF.Max(region.WaterLevel, region.Height(kx, kz)) + half.Y * .7f, kz);
             node.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, a);
         }
         // Coral glows under the clear water.

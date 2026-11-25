@@ -32,7 +32,7 @@ Status legend: ✅ done · 🟡 partial · ⬜ not started
 - 🟡 Head GLBs are slimmed to about 1 MB (24k tris, 1K textures); komodo, leviathan and kapal were regenerated as full 3D heads. Still to do: LODs.
 - ✅ Collapse cinematic (a wide orbit scaled to each guardian's height, HUD hidden) and a post-victory close-up on the head behind the result card.
 - ✅ GARUDA voice lines (ElevenLabs) for all 11 lines in Indonesian and English.
-- ⬜ Terrain edge walls dressed as cliffs/karst. Raja Ampat's edge currently reads as a pale wall.
+- ✅ Terrain edge dressed with a ring of instanced rock outcrops in every biome except the city, and Raja Ampat's karst towers now stand on the rim instead of being buried in it.
 - ✅ Photo mode (pause menu, solo): free orbit within 40 m, pan, height, zoom; PNG saved to Pictures/Nusantara Colossi.
 
 ## Milestone 3: Content and tension
