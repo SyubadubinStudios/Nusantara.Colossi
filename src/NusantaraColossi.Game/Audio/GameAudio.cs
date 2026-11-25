@@ -30,12 +30,27 @@ public sealed class GameAudio : IDisposable
 
     public bool IsAvailable => engine is not null;
 
+    /// <summary>
+    /// Set by a host whose platform ThreeNet cannot open a device on (Android: the native output aborts
+    /// because no NDK context is registered). GameAudio then mixes into an offline engine at
+    /// <see cref="OfflineSampleRate"/> and hands it to this sink, which streams <see cref="AudioEngine.Render"/>
+    /// output to the platform's own audio API. The sink returns an IDisposable that stops the stream.
+    /// </summary>
+    public static Func<AudioEngine, IDisposable>? OfflineSink { get; set; }
+    public const int OfflineSampleRate = 48000;
+    private readonly IDisposable? offlineStream;
+
     public GameAudio(GameSettings settings)
     {
         this.settings = settings;
         try
         {
-            engine = AudioEngine.Open();
+            if (OfflineSink is { } sink)
+            {
+                engine = AudioEngine.CreateOffline(OfflineSampleRate);
+                offlineStream = sink(engine);
+            }
+            else engine = AudioEngine.Open();
             engine.MasterGain = settings.Volume;
         }
         catch (Exception)
@@ -307,6 +322,7 @@ public sealed class GameAudio : IDisposable
         StopAll();
         foreach (var clip in clips.Values) clip?.Remove();
         clips.Clear();
+        offlineStream?.Dispose(); // stop the platform stream before the engine goes away
         engine?.Dispose();
     }
 }

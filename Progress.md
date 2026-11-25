@@ -57,7 +57,13 @@ The project moved to `C:\experiment\syubadubin\Nusantara.Colossi` (GitHub: Syuba
 - **Guardian bodies** are still procedural sculpted boxes; only the heads are generated models. Full body meshes (Rodin → retopology → skinned to the part pivots) are the largest open item.
 - **Arka's clips are procedural keyframes**, not motion capture or hand-keyed animation. Hand IK has been seen only in autopilot screenshots (no broken limbs) and has not been tuned by eye in play.
 - **Co-op has not been tried across two machines** or through NAT. Only loopback has been tested.
-- **Linux, macOS and Android packages** build in CI and are attached to the release, but have not been run on real hardware or a device.
+- **Linux and macOS packages** build in CI and are attached to the release, but have not been run on real hardware.
+- **Android** was run on a Huawei MatePad (Mali-G51, Android 10, 1920×1200):
+  - Fixed: ThreeNet's device audio aborted natively at launch ("android context was not initialized"). Audio now mixes offline and streams through `AudioTrack`.
+  - The title screen and map render correctly, and keyboard Enter navigates.
+  - The game is not playable on this GPU: about 2.8 FPS, with ~320 ms render time per frame at 1344×811 and ~270k triangles on the title screen. Touch taps are not picked up at this frame rate.
+  - Next: retest on a stronger device. A mobile quality preset is needed (lower resolution, fewer triangles and props).
+  - Profiling: `adb shell touch /sdcard/Android/data/com.syubadubin.nusantaracolossi/files/profile` logs frame timings and pointer events to logcat (tag `NC`).
 - **Heavy 3D sources stay out of git**: the `.blend` files and raw GLBs in `assets/sources`. They are attached to releases as `source-assets`.
 
 ## 2026-11-25: Vertical slice

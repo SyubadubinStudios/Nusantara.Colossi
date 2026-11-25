@@ -63,7 +63,12 @@ public sealed class Shell : UserControl, IDisposable
     private readonly Stopwatch clock = Stopwatch.StartNew();
     private double lastTick, lastRender;
     private bool rendererFailed;
-    private static readonly bool Profile = Environment.GetEnvironmentVariable("NC_PROFILE") == "1";
+    /// <summary>NC_PROFILE=1 (or <see cref="ProfileOverride"/> on Android) logs frame timings every 2 s.</summary>
+    public static bool ProfileOverride { get; set; }
+    /// <summary>Where profile lines go; Android routes them to logcat (tag NC).</summary>
+    public static Action<string> Log { get; set; } = line => Console.Error.WriteLine(line);
+    private static readonly bool ProfileEnv = Environment.GetEnvironmentVariable("NC_PROFILE") == "1";
+    private static bool Profile => ProfileOverride || ProfileEnv;
     private double profileStart, profileTick, profileRender;
     private int profileFrames;
 
@@ -156,6 +161,8 @@ public sealed class Shell : UserControl, IDisposable
 
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnKeyUp, RoutingStrategies.Tunnel);
+        if (Profile) AddHandler(PointerPressedEvent, (_, e) => Log($"[input] {e.Pointer.Type} press at {e.GetPosition(this)} on {e.Source?.GetType().Name}"), RoutingStrategies.Tunnel, handledEventsToo: true);
+        if (Profile) AddHandler(PointerReleasedEvent, (_, e) => Log($"[input] {e.Pointer.Type} release at {e.GetPosition(this)} handled={e.Handled}"), RoutingStrategies.Bubble, handledEventsToo: true);
         AddHandler(PointerPressedEvent, (_, e) => { if (Current?.CapturesGameInput == true) Context.Input.PointerPressed(e.GetCurrentPoint(this).Properties, e.GetPosition(this)); }, RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(PointerReleasedEvent, (_, e) => Context.Input.PointerReleased(e.InitialPressMouseButton switch
         {
@@ -166,7 +173,10 @@ public sealed class Shell : UserControl, IDisposable
         AddHandler(PointerMovedEvent, (_, e) => Context.Input.PointerMoved(e.GetPosition(this)), RoutingStrategies.Tunnel, handledEventsToo: true);
         LostFocus += (_, _) => { if (Current?.CapturesGameInput != true) Context.Input.Reset(); };
 
-        timer = new DispatcherTimer(TimeSpan.FromMilliseconds(8), DispatcherPriority.Render, (_, _) => Frame());
+        // On phones and tablets a frame often takes longer than the poll interval. A Render-priority
+        // timer would then always be due and starve touch input and layout, so mobile polls at
+        // Background priority: input and layout run first, then the next frame.
+        timer = new DispatcherTimer(TimeSpan.FromMilliseconds(8), App.IsMobile ? DispatcherPriority.Background : DispatcherPriority.Render, (_, _) => Frame());
         // Transitions need a live render clock, so the first screen is created once attached.
         AttachedToVisualTree += (_, _) =>
         {
@@ -290,7 +300,7 @@ public sealed class Shell : UserControl, IDisposable
             {
                 var r = viewport.Renderer;
                 var st = r?.Stats;
-                Console.Error.WriteLine($"[frame] {profileFrames / (now - profileStart):0.0} fps  tick {profileTick / profileFrames:0.00} ms  render {profileRender / profileFrames:0.00} ms  ({Current?.GetType().Name}) {r?.AdapterName} {r?.Width}x{r?.Height} draws {st?.DrawCalls} tris {st?.Triangles} lights {st?.Lights} shadowDraws {st?.ShadowDrawCalls} cpu {st?.CpuTimeMs:0.0} gpu {st?.GpuTimeMs:0.0}");
+                Log($"[frame] {profileFrames / (now - profileStart):0.0} fps  tick {profileTick / profileFrames:0.00} ms  render {profileRender / profileFrames:0.00} ms  ({Current?.GetType().Name}) {r?.AdapterName} {r?.Width}x{r?.Height} draws {st?.DrawCalls} tris {st?.Triangles} lights {st?.Lights} shadowDraws {st?.ShadowDrawCalls} cpu {st?.CpuTimeMs:0.0} gpu {st?.GpuTimeMs:0.0}");
                 profileStart = now;
                 profileTick = profileRender = 0;
                 profileFrames = 0;
