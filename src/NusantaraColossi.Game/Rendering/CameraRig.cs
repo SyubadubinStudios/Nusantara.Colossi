@@ -46,9 +46,99 @@ public sealed class CameraRig
         shakeRoll = 0;
     }
 
+    private float cineTime, cineStart;
+    private bool cineActive;
+    private Vector3 photoFocus, photoOrigin;
+    private float photoDistance, photoFov;
+
+    /// <summary>
+    /// The guardian has fallen: a slow wide orbit while it collapses (framing scaled to its height), then,
+    /// with <paramref name="inscription"/>, a close low orbit on the head where its inscription glows.
+    /// Starts from the current view and eases there, so there is no hard cut.
+    /// </summary>
+    public void Cinematic(Colossus colossus, RegionDefinition region, bool inscription, float dt)
+    {
+        if (!cineActive)
+        {
+            cineActive = true;
+            cineTime = 0;
+            cineStart = Yaw + MathF.PI * .7f;
+        }
+        time += dt;
+        cineTime += dt;
+        var bp = colossus.Blueprint;
+        var head = colossus.PartWorld[Math.Max(0, bp.HeadPart)].Translation;
+        var body = colossus.Pose.Position + Vector3.UnitY * bp.Height * .3f;
+        var k = Math.Clamp(colossus.Pose.Collapse, 0, 1);
+        Vector3 focus;
+        float radius, height, angle, fov;
+        if (!inscription)
+        {
+            focus = Vector3.Lerp(head, body, .35f + .35f * k);
+            radius = bp.Height * 1.1f + 16;
+            height = bp.Height * (.5f - .3f * k) + 3;
+            angle = cineStart + cineTime * .1f;
+            fov = 50;
+        }
+        else
+        {
+            focus = head + Vector3.UnitY * .5f;
+            radius = MathF.Max(7, bp.Height * .22f);
+            height = 1.5f + bp.Height * .04f;
+            angle = cineStart + .9f + cineTime * .035f;
+            fov = 40;
+        }
+        var want = focus + new Vector3(MathF.Sin(angle) * radius, height, MathF.Cos(angle) * radius);
+        var ground = region.Height(want.X, want.Z) + 1.2f;
+        if (region.HasWater) ground = MathF.Max(ground, region.WaterLevel + 1);
+        want.Y = MathF.Max(want.Y, ground);
+        Position = Mathx.Damp(Position, want, 1.6f, dt);
+        Focus = Mathx.Damp(Focus, focus, 2.5f, dt);
+        FieldOfView = Mathx.Damp(FieldOfView, fov, 1.5f, dt);
+        trauma = MathF.Max(0, trauma - dt * .9f);
+        var shake = trauma * trauma * ShakeScale * .5f;
+        shakeOffset = new Vector3(Noise.Value(time * 18, 0, 3) - .5f, Noise.Value(time * 18, 5, 3) - .5f, 0) * shake;
+        shakeRoll = 0;
+    }
+
+    public void BeginPhoto()
+    {
+        photoFocus = photoOrigin = Focus;
+        photoDistance = Math.Clamp(Vector3.Distance(Position, Focus), 3, 30);
+        photoFov = FieldOfView;
+        var to = Focus - Position;
+        Yaw = Mathx.YawOf(Mathx.Flat(to));
+        Pitch = Math.Clamp(MathF.Atan2(to.Y, Mathx.Flat(to).Length()), -1.4f, 1.4f);
+        shakeOffset = Vector3.Zero;
+        shakeRoll = 0;
+    }
+
+    /// <summary>Photo mode: a free orbit camera that stays within 40 m of where the hunt was paused.</summary>
+    public void Photo(RegionDefinition region, Vector2 look, Vector2 pan, float rise, float zoom, float dt)
+    {
+        Yaw = Mathx.WrapAngle(Yaw + look.X);
+        Pitch = Math.Clamp(Pitch + look.Y, -1.4f, 1.4f);
+        var flat = Mathx.Forward(Yaw);
+        var right = Vector3.Cross(flat, Vector3.UnitY);
+        photoFocus += (right * pan.X + flat * pan.Y) * 8 * dt + Vector3.UnitY * rise * 5 * dt;
+        var offset = photoFocus - photoOrigin;
+        if (offset.Length() > 40) photoFocus = photoOrigin + Vector3.Normalize(offset) * 40;
+        photoFov = Math.Clamp(photoFov - zoom * 30 * dt, 15, 90);
+        var position = photoFocus - Forward * photoDistance;
+        var ground = region.Height(position.X, position.Z) + .4f;
+        if (region.HasWater) ground = MathF.Max(ground, region.WaterLevel + .3f);
+        position.Y = MathF.Max(position.Y, ground);
+        Position = position;
+        Focus = photoFocus;
+        FieldOfView = photoFov;
+        shakeOffset = Vector3.Zero;
+        shakeRoll = 0;
+    }
+
     public void Update(Player player, Colossus colossus, RegionDefinition region, Vector2 look, float dt)
     {
         time += dt;
+        cineActive = false;
         var attached = player.Mode == PlayerMode.Attached;
         var climbing = attached && !player.IsStanding;
         var playerFocus = player.BodyCenter + Vector3.UnitY * (climbing ? .4f : .7f);

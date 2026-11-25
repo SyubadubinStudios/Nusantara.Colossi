@@ -27,13 +27,13 @@ Status legend: ✅ done · 🟡 partial · ⬜ not started
 
 ## Milestone 2: Feel and fidelity
 
-- 🟡 Arka is rigged with `Idle/Run/Climb/Jump/Stab/Hang` clips. Still to do: hand-polish the placeholder animations and add hand IK onto grip points.
+- 🟡 Arka has 15 procedural clips (`arka_anim.py`): Idle, Run, Sprint, Jump, Fall, Climb, ClimbIdle, Hang, Stab, StabRelease, Dodge, Swim, Death, Ride, Glide. Still to do: hand IK onto grip points, and motion-captured or hand-keyed polish.
 - ⬜ Full guardian body meshes (Rodin → Blender retopology), skinned to the rig's part pivots; keep the box colliders.
-- 🟡 Head GLBs are slimmed to about 1 MB (24k tris, 1K textures). Still to do: add LODs and sculpt full backs for komodo, leviathan and kapal.
-- ⬜ Collapse cinematics per guardian, and a post-victory "inscription" camera.
-- 🟡 GARUDA voice lines are generated with ElevenLabs into `assets/audio/voice`. Still to do: full ID/EN coverage for every line.
+- 🟡 Head GLBs are slimmed to about 1 MB (24k tris, 1K textures); komodo, leviathan and kapal were regenerated as full 3D heads. Still to do: LODs.
+- ✅ Collapse cinematic (a wide orbit scaled to each guardian's height, HUD hidden) and a post-victory close-up on the head behind the result card.
+- ✅ GARUDA voice lines (ElevenLabs) for all 11 lines in Indonesian and English.
 - ⬜ Terrain edge walls dressed as cliffs/karst. Raja Ampat's edge currently reads as a pale wall.
-- ⬜ Photo mode.
+- ✅ Photo mode (pause menu, solo): free orbit within 40 m, pan, height, zoom; PNG saved to Pictures/Nusantara Colossi.
 
 ## Milestone 3: Content and tension
 
@@ -42,7 +42,7 @@ Status legend: ✅ done · 🟡 partial · ⬜ not started
   - Gedung Titan sheds glass shards.
   - Leviathan dives with a breath meter.
   - Kapal Majapahit fires its cannons.
-- ✅ Vehicles from the original design (motor trail, jet ski, glider), as in-arena mounts. 🟡 Not yet in co-op packets.
+- ✅ Vehicles from the original design (motor trail, jet ski, glider), as in-arena mounts, synced in co-op (protocol 3).
 - ✅ A ninth, secret guardian tied to GARUDA NET itself (Garuda Agung at Nusantara Point Zero, with an epilogue).
 - ✅ Time-attack leaderboards (local, top five per guardian).
 
@@ -51,5 +51,5 @@ Status legend: ✅ done · 🟡 partial · ⬜ not started
 - ⬜ Android device QA: performance pass on mid-range phones, AOT build, Play Store packaging.
 - 🟡 macOS and Linux packaging scripts plus CI smoke checks. Windows installer (Inno Setup) tested. Linux and macOS not yet run on real machines.
 - 🟡 Co-op: LAN discovery, reconnect and host migration are implemented and unit-tested, but not tried across machines.
-- 🟡 Accessibility: remappable controls, hold-to-toggle grip, high-contrast HUD, non-colour cues and UI scale. The settings screen still needs a visual pass.
+- ✅ Accessibility: remappable controls, hold-to-toggle grip, high-contrast HUD, non-colour cues and UI scale (checked in screenshots).
 - ✅ CI: build plus tests on Windows, Linux and macOS, and a release workflow that attaches every platform's package.

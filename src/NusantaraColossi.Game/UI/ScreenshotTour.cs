@@ -38,6 +38,27 @@ public static class ScreenshotTour
             ], 0);
             return;
         }
+        // NC_SHOT_CINEMA=1: the victory cinematic and inscription camera, then photo mode (use NC_DATA_DIR
+        // so the forced victory is not written into a real profile).
+        if (Environment.GetEnvironmentVariable("NC_SHOT_CINEMA") == "1")
+        {
+            HuntScreen? hunt = null;
+            void Defeat() { for (var i = 0; i < 40 && hunt?.Encounter.Colossus.IsDefeated == false; i++) hunt.DefeatGuardianForTour(); }
+            var cinema = new List<(double Delay, Action Action)>
+            {
+                (6.0, () => { var r = Regions.Get(RegionId.Bromo); shell.Navigate(hunt = HuntScreen.Solo(shell, r, Colossi.Get(r.ColossusId), new EncounterOptions { Seed = 3 })); }),
+                (4.0, Defeat), (.5, Defeat), (.5, Defeat), (.5, Defeat),
+                (2.5, () => shell.Capture(Path.Combine(folder, "cinema-collapse-1.png"))),
+                (3.0, () => shell.Capture(Path.Combine(folder, "cinema-collapse-2.png"))),
+                (8.0, () => shell.Capture(Path.Combine(folder, "cinema-inscription.png"))),
+                (.1, () => { var r = Regions.Get(RegionId.Bali); shell.Navigate(hunt = HuntScreen.Solo(shell, r, Colossi.Get(r.ColossusId), new EncounterOptions { Seed = 3 })); }),
+                (6.0, () => typeof(HuntScreen).GetMethod("EnterPhoto", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(hunt, null)),
+                (1.0, () => shell.Capture(Path.Combine(folder, "photo-mode.png"))),
+                (.5, done),
+            };
+            Run(cinema, 0);
+            return;
+        }
         // NC_SHOT_REGIONS=Flores,Banda: only capture hunts in these regions (asset checks).
         if (Environment.GetEnvironmentVariable("NC_SHOT_REGIONS") is { Length: > 0 } only)
         {

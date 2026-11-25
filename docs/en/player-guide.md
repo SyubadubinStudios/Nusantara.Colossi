@@ -25,6 +25,10 @@
 
 Falls hurt. Anything above a short drop costs health, and the **Soft Landing** skill reduces it.
 
+## Photo mode
+
+Pause a solo hunt and choose **Photo mode**. The HUD hides and the camera floats free within 40 m: **WASD** pans, the mouse or right stick looks around, **Q/E** lower and raise, **Z/X** zoom. **Enter** or **Space** saves a PNG to `Pictures/Nusantara Colossi`. **Esc** returns to the pause menu.
+
 ## Signature mechanics
 
 On top of the shared attacks, five guardians have a mechanic of their own:

@@ -44,8 +44,9 @@ public sealed class GameSettings
 
     [JsonIgnore] public static string Directory { get; set; } = DefaultDirectory();
 
+    /// <summary>NC_DATA_DIR overrides where settings and saves live (tests, screenshot tours).</summary>
     private static string DefaultDirectory() =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Syubadubin Studios", "Nusantara Colossi");
+        Environment.GetEnvironmentVariable("NC_DATA_DIR") is { Length: > 0 } custom ? custom : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Syubadubin Studios", "Nusantara Colossi");
 
     private static string FilePath => Path.Combine(Directory, "settings.json");
 

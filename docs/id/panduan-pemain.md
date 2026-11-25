@@ -25,6 +25,10 @@
 
 Jatuh itu sakit. Jatuh lebih dari sedikit saja akan mengurangi nyawa, dan keahlian **Jatuh Lunak** menguranginya.
 
+## Mode foto
+
+Jeda perburuan solo dan pilih **Mode foto**. HUD disembunyikan dan kamera bebas melayang dalam radius 40 m: **WASD** menggeser, mouse atau stik kanan untuk melihat, **Q/E** turun dan naik, **Z/X** zoom. **Enter** atau **Spasi** menyimpan PNG ke `Pictures/Nusantara Colossi`. **Esc** kembali ke menu jeda.
+
 ## Mekanik khas
 
 Selain serangan bersama, lima Penjaga punya mekanik sendiri:

@@ -53,6 +53,7 @@ public sealed class InputMapper
     private string appliedLanguage = "";
 
     private readonly HashSet<Key> keys = [];
+    private bool shutterLatch;
     private bool leftMouse, rightMouse;
     private Avalonia.Point? lastPointer;
     private Vector2 mouseLook;
@@ -247,6 +248,7 @@ public sealed class InputMapper
         UsingGamepad = false;
         EnsureBindings();
         if (key == Key.Escape) pauseLatch = true; // always, whatever Pause is bound to
+        if (key is Key.Enter or Key.Space) shutterLatch = true;
         for (var i = 0; i < ActionCount; i++)
         {
             if (!Matches(keyMap[i], key)) continue;
@@ -360,6 +362,35 @@ public sealed class InputMapper
         var l = lockLatch || (padMap[(int)GameAction.Lock] is var b && b != 0 && Pad.WasPressed(b));
         lockLatch = false;
         return l;
+    }
+
+    /// <summary>Photo mode: pan (WASD / left stick), rise (E·Q / bumpers) and zoom (X·Z / triggers). No latches touched.</summary>
+    public (Vector2 Pan, float Rise, float Zoom) PhotoAxes()
+    {
+        var pan = new Vector2((Down(Key.D) ? 1 : 0) - (Down(Key.A) ? 1 : 0), (Down(Key.W) ? 1 : 0) - (Down(Key.S) ? 1 : 0));
+        pan += Pad.LeftStick + TouchMove;
+        if (pan.LengthSquared() > 1) pan = Vector2.Normalize(pan);
+        var buttons = Pad.Buttons;
+        var rise = (Down(Key.E) || (buttons & GamepadButton.RightBumper) != 0 ? 1 : 0) - (Down(Key.Q) || (buttons & GamepadButton.LeftBumper) != 0 ? 1 : 0);
+        var zoom = (Down(Key.X) ? 1 : 0) - (Down(Key.Z) ? 1 : 0) + Pad.RightTrigger - Pad.LeftTrigger;
+        return (pan, rise, zoom);
+    }
+
+    /// <summary>Photo mode shutter: Enter, Space or the pad's south button.</summary>
+    public bool ConsumeShutter()
+    {
+        var shot = shutterLatch || Pad.WasPressed(GamepadButton.South);
+        shutterLatch = false;
+        jumpLatch = false;
+        return shot;
+    }
+
+    /// <summary>Photo mode exit: Esc / pause, or the pad's east button.</summary>
+    public bool ConsumeBack()
+    {
+        var back = pauseLatch || Pad.WasPressed(GamepadButton.East) || Pad.WasPressed(GamepadButton.Start);
+        pauseLatch = false;
+        return back;
     }
 
     /// <summary>Camera look delta in radians for this frame.</summary>

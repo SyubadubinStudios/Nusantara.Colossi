@@ -29,6 +29,9 @@ public sealed class HuntScreen : Screen
     private float accumulator;
     private bool paused;
     private bool resultShown;
+    private bool photoMode;
+    private int photoShotIn;
+    private readonly TextBlock photoHelp = new() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(24, 0, 24, 28), TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, IsHitTestVisible = false, IsVisible = false };
     private float hurtFlash;
     private float subtitleTimer;
     private float hintTimer;
@@ -161,7 +164,10 @@ public sealed class HuntScreen : Screen
             grip.Margin = new Thickness(40, 0, 0, 160);
         }
 
-        Content = new Grid { Children = { hud, overlay } };
+        photoHelp.FontFamily = Palette.Telemetry;
+        photoHelp.FontSize = 12.5;
+        photoHelp.Foreground = Palette.Kapur;
+        Content = new Grid { Children = { hud, overlay, photoHelp } };
         Ctx.Audio.Voice += OnVoice;
     }
 
@@ -228,6 +234,7 @@ public sealed class HuntScreen : Screen
     {
         time += dt;
         var input = Ctx.Input;
+        if (photoMode) { TickPhoto(dt); return; }
         if (CapturesGameInput && input.ConsumePause()) SetPaused(true);
         else if (paused && input.Pad.WasPressed(GamepadButton.Start)) SetPaused(false);
         var camera = Shell.Stage.Camera;
@@ -240,7 +247,12 @@ public sealed class HuntScreen : Screen
         if (simulate)
         {
             var look = CapturesGameInput ? input.Look(dt, Ctx.Settings.Sensitivity, Ctx.Settings.InvertY) : Vector2.Zero;
-            camera.Update(Me, Encounter.Colossus, region, look, dt);
+            // Victory: the collapse cinematic, then the inscription close-up behind the result card.
+            // The guardian is falling (or fell) and nobody lost: hand the camera to the cinematic.
+            var fallen = Encounter.Colossus.IsDefeated && Encounter.Phase != EncounterPhase.Defeat;
+            if (fallen) camera.Cinematic(Encounter.Colossus, region, resultShown, dt);
+            else camera.Update(Me, Encounter.Colossus, region, look, dt);
+            hud.IsVisible = !fallen;
 
             accumulator = MathF.Min(accumulator + dt, .25f);
             Span<PlayerInput> inputs = stackalloc PlayerInput[1];
@@ -474,10 +486,62 @@ public sealed class HuntScreen : Screen
         var menu = new StackPanel { Spacing = 2, Margin = new Thickness(0, 20, 0, 0) };
         menu.Children.Add(Palette.MenuItem(Loc.T("hud.resume"), () => SetPaused(false)));
         if (coop is null) menu.Children.Add(Palette.MenuItem(Loc.T("hud.restart"), Restart));
+        if (coop is null) menu.Children.Add(Palette.MenuItem(Loc.T("hud.photo"), EnterPhoto));
         menu.Children.Add(Palette.MenuItem(Loc.T("hud.abandon"), () => Shell.FadeThrough(() => Shell.Navigate(new MapScreen(Shell, region.Id)))));
         panel.Children.Add(menu);
         panel.Children.Add(new TextBlock { Text = Ctx.Input.Summary(Ctx.Input.UsingGamepad), FontFamily = Palette.Body, FontSize = 12.5, Foreground = Palette.KapurMuted, TextWrapping = TextWrapping.Wrap, MaxWidth = 520, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 26, 0, 0), LineHeight = 20 });
         ShowOverlay(panel);
+    }
+
+    private void EnterPhoto()
+    {
+        photoMode = true;
+        overlay.Content = null;
+        hud.IsVisible = false;
+        photoHelp.Text = Loc.T("photo.eyebrow").ToUpperInvariant() + Environment.NewLine + Loc.T("photo.help");
+        photoHelp.IsVisible = true;
+        Ctx.Input.Reset();
+        Shell.Stage.Camera.BeginPhoto();
+        Focus();
+    }
+
+    private void ExitPhoto()
+    {
+        photoMode = false;
+        photoHelp.IsVisible = false;
+        hud.IsVisible = true;
+        paused = false;
+        SetPaused(true);
+    }
+
+    private void TickPhoto(float dt)
+    {
+        var input = Ctx.Input;
+        var camera = Shell.Stage.Camera;
+        if (photoShotIn > 0 && --photoShotIn == 0)
+        {
+            var pictures = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+            if (string.IsNullOrEmpty(pictures)) pictures = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var path = Path.Combine(pictures, "Nusantara Colossi", $"photo-{DateTime.Now:yyyyMMdd-HHmmss}.png");
+            try
+            {
+                Shell.Capture(path);
+                photoHelp.Text = Loc.F("photo.saved", path) + Environment.NewLine + Loc.T("photo.help");
+                Ctx.Audio.Play("ui-click", 1);
+            }
+            catch (Exception ex) { photoHelp.Text = ex.Message; }
+            photoHelp.IsVisible = true;
+        }
+        if (input.ConsumeBack()) { ExitPhoto(); return; }
+        var look = input.Look(dt, Ctx.Settings.Sensitivity, Ctx.Settings.InvertY);
+        var (pan, rise, zoom) = input.PhotoAxes();
+        camera.Photo(region, look, pan, rise, zoom, dt);
+        if (photoShotIn == 0 && input.ConsumeShutter())
+        {
+            photoHelp.IsVisible = false; // keep the help text out of the picture
+            photoShotIn = 2;
+        }
+        world?.Update(0, camera, LocalSlot, false);
     }
 
     private void Restart()
@@ -611,6 +675,20 @@ public sealed class HuntScreen : Screen
         buttons.Children.Add(Palette.Secondary(Loc.T("menu.map"), () => Shell.FadeThrough(() => Shell.Navigate(new MapScreen(Shell, region.Id)))));
         s.Children.Add(buttons);
         ShowOverlay(s);
+    }
+
+    /// <summary>Screenshot tour: break every core at once so the victory cinematic can be captured.</summary>
+    internal void DefeatGuardianForTour()
+    {
+        var e = Encounter;
+        e.Colossus.Scan(30);   // open the seals
+        e.Colossus.Stun(5);    // and drop the plates
+        for (var i = 0; i < e.Blueprint.Cores.Length; i++)
+        {
+            if (e.Colossus.Cores[i].Destroyed) continue;
+            var (position, normal) = ColossusRig.CoreWorld(e.Blueprint, e.Blueprint.Cores[i], e.Colossus.PartWorld);
+            e.ResolveStab(position + normal, true, 1, LocalSlot, 0);
+        }
     }
 
     /// <summary>Screenshot tour: drive Arka toward the guardian without a player.</summary>
