@@ -11,7 +11,7 @@
 # move with the rig exactly like the old sculpted boxes did. The boxes stay the climbable colliders.
 #
 # Game space is glTF space: Y up, guardians face +Z. Blender imports glTF as (x, -z, y).
-import sys, os, json, math
+import sys, os, json, math, tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bpy, bmesh
 import numpy as np
@@ -84,6 +84,29 @@ def score(points, boxes, rng):
     return model_to_rig + rig_to_model
 
 
+# Roughness floor per guardian. Rodin gave the Ijen warden a near-mirror roughness map (mean 0.27,
+# non-metal), which reads as wet plastic under the sky light. Volcanic stone should be matte.
+MATTE = {"penjaga-api-biru": 0.55}
+
+
+def roughen(floor):
+    """Remap the glTF roughness channel (green of the metallic-roughness map) to floor..1."""
+    for img in list(bpy.data.images):
+        if "roughness" not in img.name.lower() or img.size[0] == 0:
+            continue
+        w, h = img.size
+        px = np.empty(w * h * 4, dtype=np.float32); img.pixels.foreach_get(px)
+        px[1::4] = floor + px[1::4] * (1 - floor)
+        new = bpy.data.images.new(img.name + "_mt", w, h, alpha=True)
+        new.colorspace_settings.name = img.colorspace_settings.name
+        new.pixels.foreach_set(px)
+        new.filepath_raw = os.path.join(tempfile.mkdtemp(prefix="nc_rough_"), "rough.png")
+        new.file_format = 'PNG'; new.save(); new.pack()
+        img.user_remap(new); bpy.data.images.remove(img)
+        new.name = new.name[:-3]
+        print("ROUGHEN", new.name, "floor", floor)
+
+
 FILL = 0.75  # how far each part's mesh is stretched toward filling its collider box (0 = untouched)
 
 
@@ -152,6 +175,8 @@ def process(gid):
     rig = RIGS[gid]; boxes = rig_boxes(rig); mn, mx = rig_bounds(boxes)
     rng = np.random.default_rng(7)
     reset(); ob = import_joined(src, gid)
+    if gid in MATTE:
+        roughen(MATTE[gid])
     t0 = tri_count(ob)
     g = to_game(verts(ob))
     # Rodin models face +Z in game space (common.py), so yaw 0 is the default. The non-uniform fit

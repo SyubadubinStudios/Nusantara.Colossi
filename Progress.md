@@ -19,7 +19,7 @@
 
 - Bodies are rigid per part, not skinned. A seam or overlap can show at a joint when a limb swings far.
 - The collider boxes and the mesh still do not match exactly. On some parts Arka's hands can sit a little off the visible surface.
-- The Ijen guardian's material is very glossy.
+- ~~The Ijen guardian's material is very glossy.~~ Fixed after the release: `process_bodies.py` now applies a per-guardian roughness floor (`MATTE`, 0.55 for Penjaga Api Biru), so its roughness averages 0.67 instead of 0.27.
 - Everything else from v0.2.0 below is still open: Android on a mid-range device, co-op across machines, Linux/macOS hardware, hand IK by eye, the blank first 3D frame.
 
 ## 2026-11-25 (evening): v0.2.0
