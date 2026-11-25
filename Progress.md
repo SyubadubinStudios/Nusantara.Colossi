@@ -34,7 +34,7 @@ The project moved to `C:\experiment\syubadubin\Nusantara.Colossi` (GitHub: Syuba
 
 ### Known gaps (honest status)
 
-- **Asset polish was interrupted** (the asset agent hit a usage limit). Arka still has the placeholder clips. The flat-backed heads (komodo-agung, leviathan, kapal-majapahit) are unchanged; only raw Rodin v2 regenerations exist for komodo and leviathan. The game already maps the new clip names (Sprint, Fall, Dodge, ClimbIdle, StabRelease, Swim, Death, Ride, Glide) and falls back to the current ones until they exist.
+- **Asset polish was interrupted** (the asset agent hit a usage limit). Arka still has the placeholder clips. The flat-backed heads (komodo-agung, leviathan, kapal-majapahit) have been replaced by Rodin v2 regenerations modelled in the round, processed by `process_static.py`. The game already maps the new clip names (Sprint, Fall, Dodge, ClimbIdle, StabRelease, Swim, Death, Ride, Glide) and falls back to the current ones until they exist.
 - **The accessibility and co-op work was also cut short by the usage limit.** It builds, and its unit tests pass. The settings screen has been checked in screenshots (Fluent controls now use the prada-gold accent instead of Windows blue). LAN discovery, reconnect and migration haven't been tried across two machines.
 - **The CI and release workflows have never run on GitHub** before this push. Linux and macOS packages are untested on real machines.
 - **Milestone 2 visual items are still open:** collapse cinematics, photo mode, cliff edge walls, hand IK and full guardian body meshes.

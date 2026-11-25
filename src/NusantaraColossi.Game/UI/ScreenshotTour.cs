@@ -38,6 +38,20 @@ public static class ScreenshotTour
             ], 0);
             return;
         }
+        // NC_SHOT_REGIONS=Flores,Banda: only capture hunts in these regions (asset checks).
+        if (Environment.GetEnvironmentVariable("NC_SHOT_REGIONS") is { Length: > 0 } only)
+        {
+            var hunts = new List<(double Delay, Action Action)> { (6.0, () => { }) };
+            foreach (var name in only.Split(','))
+            {
+                if (!Enum.TryParse<RegionId>(name.Trim(), true, out var id)) continue;
+                hunts.Add((.1, () => Hunt(shell, id, 30)));
+                hunts.Add((12.0, () => shell.Capture(Path.Combine(folder, $"hunt-{id.ToString().ToLowerInvariant()}.png"))));
+            }
+            hunts.Add((.5, done));
+            Run(hunts, 0);
+            return;
+        }
         var suffix = Loc.Language == "en" ? "" : "-id";
         var steps = new List<(double Delay, Action Action)>
         {

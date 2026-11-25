@@ -15,7 +15,9 @@ HEADS = ["gedung-titan", "kerbau-langit", "dewi-padi", "leviathan",
 JOBS = [("garuda-drone", "garuda-drone.glb", os.path.join(MODELS, "garuda-drone.glb"),
          [('X', -32), ('Z', 180)], 'width', 0.6, 15000)]
 for h in HEADS:
-    JOBS.append((h, "head_%s.glb" % h, os.path.join(MODELS, "heads", h + ".glb"),
+    # A "_v2" regeneration replaces the first take (fully modelled in the round, not a flat relief).
+    v2 = "head_%s_v2.glb" % h
+    JOBS.append((h, v2 if os.path.exists(os.path.join(RODIN, v2)) else "head_%s.glb" % h, os.path.join(MODELS, "heads", h + ".glb"),
                  [('Z', 180)], 'height', 1.0, 25000))
 
 MOBILE_TEX = 1024
