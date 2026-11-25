@@ -96,6 +96,10 @@ The ElevenLabs MP3s were converted with ffmpeg to 44.1 kHz, mono, 16-bit PCM WAV
 | `audio/voice/core.wav` | Inti hancur. Penjaga itu melemah. | 3.21 s |
 | `audio/voice/victory.wav` | Penjaga telah tenang. Sejarah Nusantara terbuka kembali. | 4.81 s |
 | `audio/voice/enrage.wav` | Hati-hati! Ia mengamuk! | 1.93 s |
+| `audio/voice/flood.wav`, `dive.wav`, `breath.wav`, `immune.wav`, `finale.wav` | The five signature/finale lines (Indonesian, text in `Loc.cs`) | 4–5 s |
+| `audio/voice/<line>-en.wav` | English recordings of all 11 lines (voice "Aria", language `en`) | 2–6 s |
+
+`GameAudio.SayLine` plays `<line>-<lang>.wav` first and falls back to the Indonesian `<line>.wav`.
 
 (The other files in `audio/`, such as the music, ambience and SFX, come from a different part of the pipeline.)
 
