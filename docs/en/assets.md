@@ -13,7 +13,8 @@ The game never depends on an asset being present. Every model has a procedural f
 | `assets/art/icon.png`, `icon.ico` | App icon | Window, exe, Android launcher |
 | `assets/models/arka.glb` | Arka, with optional clips `Idle`, `Run`, `Climb`, `Jump`, `Stab`, `Hang` | `CharacterVisual` |
 | `assets/models/garuda-drone.glb` | GARUDA drone | `DroneVisual` |
-| `assets/models/heads/<id>.glb` | Guardian heads | `WorldRenderer.Colossus`, fitted to the head part |
+| `assets/models/bodies/<id>.glb`, `bodies/lod1/<id>.glb` | Full guardian bodies, split per rig part (about 35k / 9k tris) | `WorldRenderer.Colossus`: each `part-<i>` node is parented under part pivot i |
+| `assets/models/heads/<id>.glb`, `heads/lod1/<id>.glb` | Guardian heads (24k / 6k tris), used only when a guardian has no body model | `WorldRenderer.Colossus`, fitted to the head part |
 | `assets/audio/*.wav` | Music, ambience, SFX | `GameAudio` |
 | `assets/audio/voice/<line>-<lang>.wav` | Optional recorded GARUDA lines (`intro-en.wav`, …) | `GameAudio.SayLine` |
 | `assets/sources/{rodin,blender}` | Source files, not shipped | — |
@@ -39,7 +40,14 @@ Portraits and key art are generated with `GenerateImageWithGptImageFlare`. Every
 
   Textures are 1K JPEG inside each GLB. The 2K sources are kept in `assets/sources/blender/hires/`, and the prompts are recorded in `assets/sources/rodin/prompts.md`.
 - Blender (through Blender MCP) is used to clean up, scale, rig and animate. It exports GLB with the clip names above.
-- In-game, a head GLB is rotated to face +Z and uniformly scaled into its head box. The procedural head block shrinks to 82% and stays as the collision-matching core of the head.
+- **Full bodies** (`process_bodies.py`):
+  1. `dotnet run tools/rigdump/rigdump.cs -- assets/sources/rodin/rigs.json` writes every rig's rest-pose part matrices.
+  2. The script fits each Rodin body (`assets/sources/rodin/bodies/<id>.glb`) onto the rig's rest bounds. Yaw 0 is the default, because Rodin models face front; a quarter turn is tried only when the long axis disagrees.
+  3. It decimates the mesh and gives every face to the part box nearest its centre. A part left with no faces takes the faces inside its own box.
+  4. It writes one `part-<i>` object per part, with vertices in that part's pivot frame.
+  5. In game, each part node is moved under its pivot and the sculpted box mesh is detached. The box node stays, because cores hang off it and the box is still the climbing collider.
+  6. Low quality loads only the LOD. Higher qualities swap to the LOD beyond about three guardian heights.
+- Without a body model, a head GLB is rotated to face +Z and uniformly scaled into its head box. The procedural head block shrinks to 82% and stays as the collision-matching core of the head.
 
 ## Audio: AudioForge
 

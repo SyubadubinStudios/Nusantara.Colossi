@@ -28,7 +28,7 @@ Status legend: ✅ done · 🟡 partial · ⬜ not started
 ## Milestone 2: Feel and fidelity
 
 - 🟡 Arka has 15 procedural clips (`arka_anim.py`): Idle, Run, Sprint, Jump, Fall, Climb, ClimbIdle, Hang, Stab, StabRelease, Dodge, Swim, Death, Ride, Glide. Hand IK (analytic two-bone, after the mixer) pulls wrists near the climbing surface onto it; checked only in autopilot screenshots (no broken limbs), not yet tuned by eye in play. Still to do: motion-captured or hand-keyed polish.
-- ⬜ Full guardian body meshes (Rodin → Blender retopology), skinned to the rig's part pivots; keep the box colliders. Blocked on Rodin 3D generation, which was not connected in the v0.2.0 session.
+- ✅ Full guardian body meshes for all 9 guardians: Rodin 3D → `process_bodies.py` fits each model to the rig's rest pose, splits it into one mesh per part (parented to the part pivot, so it moves with the rig), and stretches each piece toward its collider box. 36k triangles near, 9k LOD far; the box colliders stay. Still to do: a hand-sculpted pass where an auto-split seam shows at a joint.
 - ✅ Head GLBs are slimmed to about 1 MB (24k tris, 1K textures); komodo, leviathan and kapal were regenerated as full 3D heads. A 6k-triangle LOD per head (`process_lods.py`, about 270 KB) is swapped in by camera distance, and Low quality loads only the LOD.
 - ✅ Collapse cinematic (a wide orbit scaled to each guardian's height, HUD hidden) and a post-victory close-up on the head behind the result card.
 - ✅ GARUDA voice lines (ElevenLabs) for all 11 lines in Indonesian and English.

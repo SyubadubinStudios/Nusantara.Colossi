@@ -2,6 +2,26 @@
 
 *Dibuat oleh Ariana Mischa Fadhila dari Syubadubin Studios · Made by Ariana Mischa Fadhila of Syubadubin Studios*
 
+## 2026-11-25 (night): v0.3.0, guardian bodies
+
+### Done
+
+- **Full-body guardians.** All nine guardians now have a full Rodin 3D body instead of sculpted boxes. The pipeline:
+  - `tools/rigdump` writes each rig's rest pose to `assets/sources/rodin/rigs.json`.
+  - `assets/sources/blender/process_bodies.py` fits the Rodin model to the rig's bounds (yaw 0, with a quarter turn only for side-on models). It then assigns every face to its nearest part box and writes one mesh per part in that part's pivot frame.
+  - Each piece is stretched part of the way toward its collider box (`FILL` 0.75, scale clamped to 0.6–1.6), so Arka grips a visible surface instead of hanging in the air off a thin limb.
+  - Output: 36k triangles with 1024 px textures (about 1.2 MB), plus a 9k-triangle LOD (about 0.4 MB) swapped in by distance. Low quality loads only the LOD.
+  - The game parents each piece under its part pivot, so bodies move with the rig, in co-op too. The box colliders are unchanged, so gameplay and the 85 tests are unaffected.
+- The Kerbau Langit body took three Rodin tries: a biped, then a charging pose, then a standing quadruped.
+- Checked in a gallery tour of all nine guardians and in Bromo/Kalimantan hunt captures.
+
+### Known gaps (honest status)
+
+- Bodies are rigid per part, not skinned. A seam or overlap can show at a joint when a limb swings far.
+- The collider boxes and the mesh still do not match exactly. On some parts Arka's hands can sit a little off the visible surface.
+- The Ijen guardian's material is very glossy.
+- Everything else from v0.2.0 below is still open: Android on a mid-range device, co-op across machines, Linux/macOS hardware, hand IK by eye, the blank first 3D frame.
+
 ## 2026-11-25 (evening): v0.2.0
 
 ### Done
@@ -19,7 +39,7 @@
 
 ### Known gaps (honest status)
 
-- **Guardian bodies** are still sculpted boxes. Generating full-body models needs Rodin 3D, which was not connected in this session. This remains the largest open item.
+- **Guardian bodies** were still sculpted boxes in v0.2.0 (done in v0.3.0, above).
 - **Android** has only run on a Mali-G51 tablet, at about 3 FPS, measured before the mobile preset. The new preset has not been measured on a device yet. Touch and audio output there are also unconfirmed. Next step: a mid-range phone.
 - **Co-op** has still only been tested over loopback. No second machine was available.
 - **Linux and macOS** builds have not been run on real hardware. This machine has no WSL and there is no Mac.

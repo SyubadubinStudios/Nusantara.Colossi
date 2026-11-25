@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Deterministic>true</Deterministic>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <Authors>Ariana Mischa Fadhila</Authors>
     <Company>Syubadubin Studios</Company>
     <Product>Nusantara Colossi</Product>

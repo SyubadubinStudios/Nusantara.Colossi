@@ -61,10 +61,21 @@ public sealed partial class WorldRenderer
             boxNodes[i] = mesh;
         }
 
-        // Rodin-generated head sculpture, fitted inside the head's collision box. Low quality loads only
-        // the light LOD; higher qualities load both and swap by camera distance (UpdateHeadLod).
+        // Rodin full-body model, split per part offline. Each "part-<i>" mesh is already in its pivot's
+        // frame, so it is parented under that pivot and moves with the rig. A part that gets a body mesh
+        // drops its sculpted box mesh (the node stays: cores hang off it, and the box stays the collider).
+        var bodyNear = Quality > 0 || !File.Exists(AssetPaths.BodyLod(bp.Id)) ? AttachBody(AssetPaths.Body(bp.Id), bodyNearParts) : 0;
+        var bodyFar = File.Exists(AssetPaths.BodyLod(bp.Id)) ? AttachBody(AssetPaths.BodyLod(bp.Id), bodyFarParts) : 0;
+        if (bodyNear > 0 && bodyFar > 0) SetVisible(bodyFarParts, false);
+        var covered = new bool[bp.Parts.Length];
+        foreach (var (index, _) in bodyNearParts.Concat(bodyFarParts)) covered[index] = true;
+        for (var i = 0; i < covered.Length; i++)
+            if (covered[i]) boxNodes[i].DetachMesh();
+
+        // Without a body model: the Rodin head sculpture, fitted inside the head's collision box. Low
+        // quality loads only the light LOD; higher qualities load both and swap by camera distance.
         var head = bp.HeadPart;
-        if (head >= 0)
+        if (head >= 0 && !covered[head])
         {
             var nearPath = AssetPaths.Head(bp.Id);
             var farPath = AssetPaths.HeadLod(bp.Id);
@@ -124,7 +135,68 @@ public sealed partial class WorldRenderer
     }
 
     private Node? headNear, headFar;
-    private bool headFarShown;
+    private bool headFarShown, bodyFarShown;
+    private readonly List<(int Part, Node Node)> bodyNearParts = [], bodyFarParts = [];
+
+    /// <summary>
+    /// Loads a split body model and moves each "part-&lt;i&gt;" node under part pivot i. Returns how many
+    /// parts it found (0 when the file is missing or fails to load).
+    /// </summary>
+    private int AttachBody(string path, List<(int Part, Node Node)> into)
+    {
+        if (!File.Exists(path)) return 0;
+        try
+        {
+            var import = Scene.LoadModelCached(path, partPivots[0]);
+            var stack = new Stack<Node>();
+            stack.Push(import.Root);
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+                if (node.Name is { } name && name.StartsWith("part-", StringComparison.Ordinal)
+                    && int.TryParse(name.AsSpan(5), out var index) && index >= 0 && index < partPivots.Length)
+                {
+                    node.Parent = partPivots[index];
+                    node.SetTransform(Vector3.Zero, Quaternion.Identity, Vector3.One);
+                    node.SetShadowsRecursive(true, true);
+                    into.Add((index, node));
+                    continue;
+                }
+                foreach (var child in node.Children) stack.Push(child);
+            }
+            import.Root.Remove();
+            return into.Count;
+        }
+        catch (ThreeNetException ex)
+        {
+            AssetWarning = $"{Path.GetFileName(path)}: {ex.Message}";
+            return 0;
+        }
+    }
+
+    private static void SetVisible(List<(int Part, Node Node)> parts, bool visible)
+    {
+        foreach (var (_, node) in parts) SetVisibleRecursive(node, visible);
+    }
+
+    private static void SetVisibleRecursive(Node node, bool visible)
+    {
+        node.Visible = visible;
+        foreach (var child in node.Children) SetVisibleRecursive(child, visible);
+    }
+
+    /// <summary>Swaps the full body for its LOD beyond about three guardian heights (15% hysteresis).</summary>
+    private void UpdateBodyLod()
+    {
+        if (bodyNearParts.Count == 0 || bodyFarParts.Count == 0) return;
+        var distance = Vector3.Distance(Camera.WorldPosition, partPivots[0].WorldPosition);
+        var threshold = MathF.Max(60, Encounter.Blueprint.Height * 3) * (bodyFarShown ? .85f : 1f);
+        var far = distance > threshold;
+        if (far == bodyFarShown) return;
+        bodyFarShown = far;
+        SetVisible(bodyNearParts, !far);
+        SetVisible(bodyFarParts, far);
+    }
 
     /// <summary>Loads a head model under the head pivot, scaled and centred inside the head's box.</summary>
     private Node? PlaceHead(string path, int head, ColossusBlueprint bp)
@@ -173,6 +245,7 @@ public sealed partial class WorldRenderer
     private void UpdateColossus(float dt)
     {
         UpdateHeadLod();
+        UpdateBodyLod();
         var colossus = Encounter.Colossus;
         var world = colossus.PartWorld;
         for (var i = 0; i < partPivots.Length; i++)

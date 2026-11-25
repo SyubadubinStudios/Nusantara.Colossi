@@ -49,7 +49,7 @@ Only one 3D world exists at a time. Menus show a "showcase" world (a guardian at
 
 ## Rendering
 
-- **Guardian parts** are `MeshFactory.SculptedBox` meshes: rounded, noise-displaced boxes kept inside their collision boxes, with UVs in metres. When `assets/models/heads/<id>.glb` exists, the head part uses that GLB, scaled to fit the head box.
+- **Guardian parts** use the full-body model `assets/models/bodies/<id>.glb` when it exists. It holds one mesh per part (`part-<i>`), each in its part's pivot frame, so the meshes are reparented under the pivots and move with the rig (see [assets](assets.md)). A far LOD (`bodies/lod1`) is swapped in by distance. Without a body model, parts fall back to `MeshFactory.SculptedBox` meshes: rounded, noise-displaced boxes kept inside their collision boxes, and the head uses `assets/models/heads/<id>.glb` scaled to fit the head box. In every case the boxes stay the climbing colliders.
 - **WGSL surface shaders** (`Shaders.cs`) hook the PBR surface before lighting, so shadows, fog and tone mapping still apply. The colossus shader works in UV space: carved panels, the kawung motif, moss, fur, wood, glass, and seam glow pulsed from C#. The terrain shader works in world space, with per-biome details such as roads and puddles, flooded paddies, sulfur crusts and shorelines. Low quality drops two noise octaves.
 - **Effects.** Instanced foliage, GPU particle emitters (sparks, dust, ichor, splash, embers, plumes), Three.Net `FireEffect`, `WaterSurface` and `CloudLayer`, plus lightning in storms.
 - **Lights are budgeted.** A core light exists only while the core is open or flashing. Drone lights exist only for active players. Fire, street and shrine lights scale with quality.

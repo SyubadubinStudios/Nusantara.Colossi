@@ -38,6 +38,22 @@ public static class ScreenshotTour
             ], 0);
             return;
         }
+        // NC_SHOT_GALLERY=1: every guardian in the menu showcase with no UI, two orbit angles each
+        // (body-mesh checks).
+        if (Environment.GetEnvironmentVariable("NC_SHOT_GALLERY") == "1")
+        {
+            var gallery = new List<(double Delay, Action Action)>();
+            foreach (var g in Colossi.All)
+            {
+                var id = g.Id;
+                gallery.Add((.5, () => shell.Navigate(new GalleryScreen(shell, id))));
+                gallery.Add((5.0, () => shell.Capture(Path.Combine(folder, $"gallery-{id}-a.png"))));
+                gallery.Add((7.0, () => shell.Capture(Path.Combine(folder, $"gallery-{id}-b.png"))));
+            }
+            gallery.Add((.5, done));
+            Run(gallery, 0);
+            return;
+        }
         // NC_SHOT_CREDITS=1: the scrolling credits at the start, mid-roll and at rest.
         if (Environment.GetEnvironmentVariable("NC_SHOT_CREDITS") == "1")
         {
@@ -132,4 +148,10 @@ public static class ScreenshotTour
             Run(steps, index + 1);
         }, TimeSpan.FromSeconds(steps[index].Delay));
     }
+}
+
+/// <summary>An empty screen over the menu showcase of one guardian (screenshot gallery only).</summary>
+internal sealed class GalleryScreen(Shell shell, string colossusId) : Screen(shell)
+{
+    public override void Enter() => Shell.Stage.ShowShowcase(colossusId, Ctx.Settings.Quality);
 }

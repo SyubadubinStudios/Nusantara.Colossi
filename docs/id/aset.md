@@ -13,7 +13,8 @@ Game tidak pernah bergantung pada keberadaan aset. Setiap model punya cadangan p
 | `assets/art/icon.png`, `icon.ico` | Ikon aplikasi | Jendela, exe, peluncur Android |
 | `assets/models/arka.glb` | Arka, dengan klip opsional `Idle`, `Run`, `Climb`, `Jump`, `Stab`, `Hang` | `CharacterVisual` |
 | `assets/models/garuda-drone.glb` | Drone GARUDA | `DroneVisual` |
-| `assets/models/heads/<id>.glb` | Kepala Penjaga | `WorldRenderer.Colossus`, disesuaikan dengan bagian kepala |
+| `assets/models/bodies/<id>.glb`, `bodies/lod1/<id>.glb` | Tubuh penuh Penjaga, dipotong per bagian rig (sekitar 35 ribu / 9 ribu segitiga) | `WorldRenderer.Colossus`: setiap node `part-<i>` dipasang di bawah pivot bagian i |
+| `assets/models/heads/<id>.glb`, `heads/lod1/<id>.glb` | Kepala Penjaga (24 ribu / 6 ribu segitiga), hanya dipakai jika Penjaga tidak punya model tubuh | `WorldRenderer.Colossus`, disesuaikan dengan bagian kepala |
 | `assets/audio/*.wav` | Musik, suasana, SFX | `GameAudio` |
 | `assets/audio/voice/<baris>-<bahasa>.wav` | Rekaman suara GARUDA opsional (`intro-id.wav`, …) | `GameAudio.SayLine` |
 | `assets/sources/{rodin,blender}` | File sumber, tidak dikirim | — |
@@ -39,7 +40,14 @@ Potret dan key art dibuat dengan `GenerateImageWithGptImageFlare`. Setiap prompt
 
   Teksturnya JPEG 1K di dalam setiap GLB. Sumber 2K disimpan di `assets/sources/blender/hires/`, dan prompt dicatat di `assets/sources/rodin/prompts.md`.
 - Blender (lewat Blender MCP) dipakai untuk merapikan, menyetel skala, rigging, dan animasi. Ekspornya GLB dengan nama klip di atas.
-- Di dalam game, GLB kepala diputar agar menghadap +Z dan diskalakan seragam ke dalam kotak kepala. Balok kepala prosedural mengecil menjadi 82% dan tetap menjadi inti kepala yang cocok dengan tabrakan.
+- **Tubuh penuh** (`process_bodies.py`):
+  1. `dotnet run tools/rigdump/rigdump.cs -- assets/sources/rodin/rigs.json` menulis matriks setiap bagian rig dalam pose diam.
+  2. Skrip menyesuaikan setiap model tubuh Rodin (`assets/sources/rodin/bodies/<id>.glb`) ke batas pose diam rig. Yaw 0 menjadi bawaan karena model Rodin menghadap depan; putaran seperempat hanya dicoba jika sumbu panjangnya tidak cocok.
+  3. Mesh di-decimate, lalu setiap face diberikan ke kotak bagian yang paling dekat dengan pusatnya. Bagian yang tidak kebagian face mengambil face di dalam kotaknya sendiri.
+  4. Skrip menulis satu objek `part-<i>` per bagian, dengan verteks di ruang pivot bagian itu.
+  5. Di game, setiap node bagian dipindah ke bawah pivotnya dan mesh kotak pahatannya dilepas. Node kotak tetap ada, karena inti menempel di sana dan kotak tetap menjadi collider panjat.
+  6. Kualitas Low hanya memuat LOD. Kualitas yang lebih tinggi beralih ke LOD di luar sekitar tiga kali tinggi Penjaga.
+- Tanpa model tubuh, GLB kepala diputar agar menghadap +Z dan diskalakan seragam ke dalam kotak kepala. Balok kepala prosedural mengecil menjadi 82% dan tetap menjadi inti kepala yang cocok dengan tabrakan.
 
 ## Audio: AudioForge
 
