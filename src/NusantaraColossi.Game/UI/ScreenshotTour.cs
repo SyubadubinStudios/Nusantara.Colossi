@@ -38,6 +38,20 @@ public static class ScreenshotTour
             ], 0);
             return;
         }
+        // NC_SHOT_CREDITS=1: the scrolling credits at the start, mid-roll and at rest.
+        if (Environment.GetEnvironmentVariable("NC_SHOT_CREDITS") == "1")
+        {
+            Run(
+            [
+                (6.0, () => shell.Navigate(new CreditsScreen(shell))),
+                (3.0, () => shell.Capture(Path.Combine(folder, "credits-1.png"))),
+                (14.0, () => shell.Capture(Path.Combine(folder, "credits-2.png"))),
+                (14.0, () => shell.Capture(Path.Combine(folder, "credits-3.png"))),
+                (30.0, () => shell.Capture(Path.Combine(folder, "credits-end.png"))),
+                (.5, done),
+            ], 0);
+            return;
+        }
         // NC_SHOT_CINEMA=1: the victory cinematic and inscription camera, then photo mode (use NC_DATA_DIR
         // so the forced victory is not written into a real profile).
         if (Environment.GetEnvironmentVariable("NC_SHOT_CINEMA") == "1")
