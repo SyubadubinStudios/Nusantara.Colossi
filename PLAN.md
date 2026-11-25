@@ -50,6 +50,6 @@ Status legend: ✅ done · 🟡 partial · ⬜ not started
 
 - ⬜ Android device QA: performance pass on mid-range phones, AOT build, Play Store packaging.
 - 🟡 macOS and Linux packaging scripts plus CI smoke checks. Windows installer (Inno Setup) tested. Linux and macOS not yet run on real machines.
-- 🟡 Co-op: LAN discovery, reconnect and host migration are implemented and unit-tested, but not tried across machines.
+- 🟡 Co-op: LAN discovery, reconnect and host migration are implemented. `tests/NusantaraColossi.Net.Tests` runs real UDP sessions over loopback: join, snapshots, player and vehicle state, and host migration. Not yet tried across two machines or through NAT.
 - ✅ Accessibility: remappable controls, hold-to-toggle grip, high-contrast HUD, non-colour cues and UI scale (checked in screenshots).
 - ✅ CI: build plus tests on Windows, Linux and macOS, and a release workflow that attaches every platform's package.

@@ -67,12 +67,18 @@ jobs:
         run: |
           dotnet build src/NusantaraColossi.Desktop/NusantaraColossi.Desktop.csproj -c Release
           dotnet build tests/NusantaraColossi.Core.Tests/NusantaraColossi.Core.Tests.csproj -c Release
+          dotnet build tests/NusantaraColossi.Net.Tests/NusantaraColossi.Net.Tests.csproj -c Release
           dotnet build tools/NusantaraColossi.AudioForge/NusantaraColossi.AudioForge.csproj -c Release
 
       - name: Test
         run: >
           dotnet test tests/NusantaraColossi.Core.Tests/NusantaraColossi.Core.Tests.csproj -c Release --no-build
           --logger "trx;LogFileName=tests-${{ matrix.rid }}.trx" --results-directory TestResults
+
+      - name: Co-op loopback tests
+        run: >
+          dotnet test tests/NusantaraColossi.Net.Tests/NusantaraColossi.Net.Tests.csproj -c Release --no-build
+          --logger "trx;LogFileName=net-tests-${{ matrix.rid }}.trx" --results-directory TestResults
 
       - name: Upload test results
         if: always()

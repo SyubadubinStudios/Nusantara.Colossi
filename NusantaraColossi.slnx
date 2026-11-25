@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/NusantaraColossi.Core.Tests/NusantaraColossi.Core.Tests.csproj" />
+    <Project Path="tests/NusantaraColossi.Net.Tests/NusantaraColossi.Net.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/NusantaraColossi.AudioForge/NusantaraColossi.AudioForge.csproj" />

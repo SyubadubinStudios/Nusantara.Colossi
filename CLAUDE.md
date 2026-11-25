@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 dotnet build NusantaraColossi.slnx                      # everything (Android needs the android workload)
-dotnet test                                              # 81 xUnit tests (Core simulation)
+dotnet test                                              # 82 Core xUnit tests + 3 loopback co-op tests (Net.Tests, ~12 s)
 dotnet test --filter "FullyQualifiedName~Climb"          # single test / subset
 dotnet run --project src/NusantaraColossi.Desktop        # play
 dotnet run --project src/NusantaraColossi.Desktop -- --screenshot docs/images --lang en   # regenerate doc screenshots (also --lang id → *-id.png)
