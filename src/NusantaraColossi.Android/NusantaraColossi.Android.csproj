@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Android head. Build: dotnet build src/NusantaraColossi.Android -c Release (needs the .NET Android workload). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
+    <ApplicationId>com.syubadubin.nusantaracolossi</ApplicationId>
+    <ApplicationTitle>Nusantara Colossi</ApplicationTitle>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
+    <!-- AOT needs the full Mono AOT workload; enable it for store builds where it is installed. -->
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <!-- Avalonia's code-built UI needs no XAML compilation. -->
+    <EnableDefaultAndroidItems>true</EnableDefaultAndroidItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Android" />
+    <ProjectReference Include="..\NusantaraColossi.Game\NusantaraColossi.Game.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Packed into the APK and extracted to app storage on first launch (ThreeNet loads from file paths). -->
+    <AndroidAsset Include="..\..\assets\audio\**\*" Link="Assets\assets\audio\%(RecursiveDir)%(Filename)%(Extension)" />
+    <AndroidAsset Include="..\..\assets\models\**\*.glb" Link="Assets\assets\models\%(RecursiveDir)%(Filename)%(Extension)" />
+    <AndroidAsset Include="..\..\assets\art\colossi\*" Link="Assets\assets\art\colossi\%(Filename)%(Extension)" />
+    <AndroidAsset Include="..\..\assets\art\icon.png" Link="Assets\assets\art\icon.png" />
+  </ItemGroup>
+</Project>

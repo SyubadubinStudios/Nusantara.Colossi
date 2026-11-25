@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Pure game rules: no UI, GPU or platform dependencies. Shared by desktop, Android and tests. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="NusantaraColossi.Core.Tests" />
+  </ItemGroup>
+</Project>

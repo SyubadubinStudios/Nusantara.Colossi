@@ -1,0 +1,186 @@
+# Nusantara Colossi CI - build, test, package and smoke-check the desktop head on all three desktop OSes.
+# Dibuat oleh Ariana Mischa Fadhila dari Syubadubin Studios.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+
+jobs:
+  desktop:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows (win-x64)
+            os: windows-latest
+            rid: win-x64
+            native: threenet_core.dll
+            exe: NusantaraColossi.exe
+          - name: Linux (linux-x64)
+            os: ubuntu-latest
+            rid: linux-x64
+            native: libthreenet_core.so
+            exe: NusantaraColossi
+          - name: macOS (osx-arm64)
+            os: macos-latest
+            rid: osx-arm64
+            native: libthreenet_core.dylib
+            exe: NusantaraColossi
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('global.json', 'Directory.Packages.props', 'src/**/*.csproj', 'tests/**/*.csproj', 'tools/**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      # The Android head needs the android workload, so it is built in its own job below.
+      # Desktop + tests + tools cover every other project in NusantaraColossi.slnx.
+      - name: Build
+        run: |
+          dotnet build src/NusantaraColossi.Desktop/NusantaraColossi.Desktop.csproj -c Release
+          dotnet build tests/NusantaraColossi.Core.Tests/NusantaraColossi.Core.Tests.csproj -c Release
+          dotnet build tools/NusantaraColossi.AudioForge/NusantaraColossi.AudioForge.csproj -c Release
+
+      - name: Test
+        run: >
+          dotnet test tests/NusantaraColossi.Core.Tests/NusantaraColossi.Core.Tests.csproj -c Release --no-build
+          --logger "trx;LogFileName=tests-${{ matrix.rid }}.trx" --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.rid }}
+          path: TestResults/*.trx
+          if-no-files-found: ignore
+
+      # Each script runs `dotnet publish -r <rid> --self-contained` and then wraps the output
+      # (zip on Windows, AppDir tarball/AppImage on Linux, .app zip on macOS).
+      - name: Publish and package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./build/package-windows.ps1
+
+      - name: Publish and package (Linux)
+        if: runner.os == 'Linux'
+        run: bash build/package-linux.sh
+
+      - name: Publish and package (macOS)
+        if: runner.os == 'macOS'
+        env:
+          RIDS: osx-arm64 osx-x64
+        run: bash build/package-macos.sh
+
+      - name: Smoke-check publish layout
+        run: |
+          set -euo pipefail
+          dir="artifacts/publish/${{ matrix.rid }}"
+          fail=0
+          for f in "${{ matrix.exe }}" "${{ matrix.native }}" ThreeNet.dll ThreeNet.Native.dll NusantaraColossi.dll \
+                   assets/art/icon.png assets/audio assets/models; do
+            if [ -e "$dir/$f" ]; then echo "ok   $f"; else echo "MISS $f"; fail=1; fi
+          done
+          if [ "${{ runner.os }}" != "Windows" ] && [ ! -x "$dir/${{ matrix.exe }}" ]; then echo "MISS +x on ${{ matrix.exe }}"; fail=1; fi
+          du -sh "$dir" "$dir/assets"
+          ls -la artifacts/packages
+          exit $fail
+
+      - name: Smoke-check app bundle (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          set -euo pipefail
+          app="artifacts/macos/osx-arm64/Nusantara Colossi.app"
+          plutil -lint "$app/Contents/Info.plist"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Contents/Info.plist")" = com.syubadubin.nusantaracolossi
+          test -f "$app/Contents/Resources/NusantaraColossi.icns"
+          codesign --verify --verbose=1 "$app"
+          file "$app/Contents/MacOS/libthreenet_core.dylib" | grep -q arm64
+
+      # Best-effort runtime smoke: start the game under a virtual X server with Mesa's software Vulkan
+      # (lavapipe) and require that it is still alive after 25 s, i.e. the native core loaded and the
+      # window came up without crashing. GPU-less runners make this flaky, so it does not fail the build.
+      - name: Runtime smoke (Linux, xvfb + lavapipe)
+        if: runner.os == 'Linux'
+        continue-on-error: true
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q xvfb mesa-vulkan-drivers libvulkan1 libice6 libsm6 libfontconfig1
+          set +e
+          timeout 25s xvfb-run -a -s "-screen 0 1280x720x24" artifacts/publish/linux-x64/NusantaraColossi
+          code=$?
+          echo "exit code: $code (124 = still running at timeout = pass)"
+          [ "$code" -eq 124 ]
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: NusantaraColossi-${{ matrix.rid }}
+          path: artifacts/packages/*
+          if-no-files-found: error
+          compression-level: 0  # packages are already compressed
+
+  android:
+    name: Android APK (optional)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.nuget/packages
+          key: nuget-android-${{ hashFiles('global.json', 'Directory.Packages.props', 'src/**/*.csproj', 'tests/**/*.csproj', 'tools/**/*.csproj') }}
+          restore-keys: nuget-android-
+
+      - name: Install android workload
+        run: dotnet workload install android
+
+      # ANDROID_HOME points at the SDK preinstalled on GitHub's Ubuntu image.
+      - name: Build APK
+        run: dotnet build src/NusantaraColossi.Android/NusantaraColossi.Android.csproj -c Release -p:AndroidSdkDirectory="$ANDROID_HOME"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NusantaraColossi-android
+          path: src/NusantaraColossi.Android/bin/Release/net10.0-android/*-Signed.apk
+          if-no-files-found: error

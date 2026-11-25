@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Shared Avalonia UI + ThreeNet rendering for every platform head (desktop, Android). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="ThreeNet" />
+    <PackageReference Include="ThreeNet.Avalonia" />
+    <ProjectReference Include="..\NusantaraColossi.Core\NusantaraColossi.Core.csproj" />
+  </ItemGroup>
+</Project>

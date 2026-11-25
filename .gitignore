@@ -424,3 +424,15 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# Nusantara Colossi
+artifacts/
+*.blend1
+
+
+# Heavy 3D source files (shipped as a release archive instead)
+assets/sources/**/*.blend
+assets/sources/**/*.blend1
+assets/sources/**/*.glb
+assets/sources/**/*.fbx
+assets/sources/**/*.obj

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ApplicationIcon Condition="Exists('..\..\assets\art\icon.ico')">..\..\assets\art\icon.ico</ApplicationIcon>
+    <AssemblyName>NusantaraColossi</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" />
+    <ProjectReference Include="..\NusantaraColossi.Game\NusantaraColossi.Game.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Runtime assets are loaded from disk by ThreeNet (models, audio) and Avalonia (art). -->
+    <Content Include="..\..\assets\models\**\*" Link="assets\models\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\assets\audio\**\*" Link="assets\audio\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\assets\art\**\*" Link="assets\art\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\assets\textures\**\*" Link="assets\textures\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!--
+    Publish: SkiaSharp/HarfBuzzSharp ship ~100 MB of native .pdb files for win-x64; they are useless to players.
+    Our own managed .pdb files (small) are kept for readable crash stack traces.
+  -->
+  <Target Name="NcDropNativePdbsFromPublish" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb' and '%(ResolvedFileToPublish.AssetType)' == 'native'" />
+    </ItemGroup>
+  </Target>
+</Project>

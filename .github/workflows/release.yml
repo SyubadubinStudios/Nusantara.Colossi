@@ -1,0 +1,111 @@
+# Nusantara Colossi - release packaging.
+# Dibuat oleh Ariana Mischa Fadhila dari Syubadubin Studios.
+#
+# When a GitHub release is published (or run by hand with a tag), every platform is packaged
+# and attached to that release:
+#   Windows  : installer (Inno Setup) + portable zip
+#   Linux    : AppImage (or tar.gz)
+#   macOS    : .app bundles (arm64, x64), zipped
+#   Android  : APK (optional, may fail without the workload)
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to attach packages to (e.g. v0.1.0)
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  TAG: ${{ github.event.release.tag_name || inputs.tag }}
+
+jobs:
+  desktop:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows installer
+            os: windows-latest
+          - name: Linux AppImage
+            os: ubuntu-latest
+          - name: macOS app
+            os: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Install Inno Setup
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Get-Command iscc -ErrorAction SilentlyContinue) -and -not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup -y --no-progress
+          }
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./build/package-windows.ps1
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y libfuse2 || true
+          curl -fsSL -o /usr/local/bin/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage && chmod +x /usr/local/bin/appimagetool || true
+          bash build/package-linux.sh
+
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: bash build/package-macos.sh
+
+      - name: Attach to release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -la artifacts/packages
+          gh release upload "$TAG" artifacts/packages/* --clobber --repo "$GITHUB_REPOSITORY"
+
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install android workload
+        run: dotnet workload install android
+      - name: Build APK
+        run: dotnet build src/NusantaraColossi.Android/NusantaraColossi.Android.csproj -c Release -p:AndroidSdkDirectory="$ANDROID_HOME"
+      - name: Attach to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          apk=$(find src/NusantaraColossi.Android/bin/Release -name '*-Signed.apk' | head -1)
+          test -n "$apk"
+          version="${TAG#v}"
+          cp "$apk" "NusantaraColossi-${version}-android.apk"
+          gh release upload "$TAG" "NusantaraColossi-${version}-android.apk" --clobber --repo "$GITHUB_REPOSITORY"

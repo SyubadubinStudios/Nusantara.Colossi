@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NusantaraColossi.Core/NusantaraColossi.Core.csproj" />
+    <Project Path="src/NusantaraColossi.Game/NusantaraColossi.Game.csproj" />
+    <Project Path="src/NusantaraColossi.Desktop/NusantaraColossi.Desktop.csproj" />
+    <Project Path="src/NusantaraColossi.Android/NusantaraColossi.Android.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NusantaraColossi.Core.Tests/NusantaraColossi.Core.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/NusantaraColossi.AudioForge/NusantaraColossi.AudioForge.csproj" />
+  </Folder>
+</Solution>
