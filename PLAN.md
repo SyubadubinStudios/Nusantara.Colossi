@@ -27,7 +27,7 @@ Status legend: ✅ done · 🟡 partial · ⬜ not started
 
 ## Milestone 2: Feel and fidelity
 
-- 🟡 Arka has 15 procedural clips (`arka_anim.py`): Idle, Run, Sprint, Jump, Fall, Climb, ClimbIdle, Hang, Stab, StabRelease, Dodge, Swim, Death, Ride, Glide. Still to do: hand IK onto grip points, and motion-captured or hand-keyed polish.
+- 🟡 Arka has 15 procedural clips (`arka_anim.py`): Idle, Run, Sprint, Jump, Fall, Climb, ClimbIdle, Hang, Stab, StabRelease, Dodge, Swim, Death, Ride, Glide. Hand IK (analytic two-bone, after the mixer) pulls wrists near the climbing surface onto it; checked only in autopilot screenshots (no broken limbs), not yet tuned by eye in play. Still to do: motion-captured or hand-keyed polish.
 - ⬜ Full guardian body meshes (Rodin → Blender retopology), skinned to the rig's part pivots; keep the box colliders.
 - 🟡 Head GLBs are slimmed to about 1 MB (24k tris, 1K textures); komodo, leviathan and kapal were regenerated as full 3D heads. Still to do: LODs.
 - ✅ Collapse cinematic (a wide orbit scaled to each guardian's height, HUD hidden) and a post-victory close-up on the head behind the result card.

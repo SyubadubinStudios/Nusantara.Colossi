@@ -68,6 +68,10 @@ public static class ScreenshotTour
                 if (!Enum.TryParse<RegionId>(name.Trim(), true, out var id)) continue;
                 hunts.Add((.1, () => Hunt(shell, id, 30)));
                 hunts.Add((12.0, () => shell.Capture(Path.Combine(folder, $"hunt-{id.ToString().ToLowerInvariant()}.png"))));
+                // NC_SHOT_LATE=1: three more frames later in the autopilot run (climbing usually starts by then).
+                if (Environment.GetEnvironmentVariable("NC_SHOT_LATE") == "1")
+                    foreach (var at in new[] { 18, 24, 30 })
+                        hunts.Add((6.0, () => shell.Capture(Path.Combine(folder, $"hunt-{id.ToString().ToLowerInvariant()}-{at}s.png"))));
             }
             hunts.Add((.5, done));
             Run(hunts, 0);

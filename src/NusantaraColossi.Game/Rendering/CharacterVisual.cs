@@ -27,6 +27,7 @@ internal sealed class CharacterVisual
 
     public bool HasModel => clips.Count > 0 || modelLoaded;
     private readonly bool modelLoaded;
+    private readonly (Node Upper, Node Lower, Node Hand)?[] arms = [];
 
     public CharacterVisual(WorldRenderer world, Scene scene, string name, Vector3 jacket, bool hologram = false)
     {
@@ -49,6 +50,7 @@ internal sealed class CharacterVisual
                     durations[clip.Name] = clip.Duration;
                 }
                 modelLoaded = true;
+                arms = [FindArm(import.Root, "R"), FindArm(import.Root, "L")];
                 Play("Idle", 0);
                 return;
             }
@@ -102,6 +104,80 @@ internal sealed class CharacterVisual
     }
 
     private float stabRelease, dodgeHold, oneShotElapsed;
+
+    private static Node? FindNode(Node node, string name)
+    {
+        if (node.Name == name) return node;
+        foreach (var child in node.Children)
+            if (FindNode(child, name) is { } found) return found;
+        return null;
+    }
+
+    private static (Node, Node, Node)? FindArm(Node root, string side) =>
+        FindNode(root, "upper_arm." + side) is { } upper && FindNode(root, "lower_arm." + side) is { } lower && FindNode(root, "hand." + side) is { } hand
+            ? (upper, lower, hand) : null;
+
+    /// <summary>
+    /// Hand IK while climbing: the clip places the hands roughly; any wrist that comes within reach of the
+    /// surface (which lies <see cref="ClimbWorld.SurfaceOffset"/> in front of the body) is pulled onto it with
+    /// an analytic two-bone solve on the upper/lower arm. Hands swinging up for the next hold stay free.
+    /// </summary>
+    private void PlantHands(Player p)
+    {
+        var normal = -Mathx.SafeNormalize(p.Facing, Vector3.UnitZ);
+        var plane = p.BodyCenter - normal * ClimbWorld.SurfaceOffset;
+        foreach (var arm in arms)
+        {
+            if (arm is not var (upper, lower, hand)) continue;
+            var wrist = hand.WorldPosition;
+            var gap = Vector3.Dot(wrist - plane, normal);
+            var weight = Mathx.SmoothStep(.45f, .12f, gap);       // 1 when the wrist is at or behind the surface
+            if (weight <= .001f) continue;
+            var onWall = wrist - normal * (gap - .07f);              // the wrist rests a palm's width off the surface
+            SolveTwoBone(upper, lower, hand, Vector3.Lerp(wrist, onWall, weight));
+        }
+    }
+
+    private static Quaternion WorldRotation(Node node)
+    {
+        Matrix4x4.Decompose(node.WorldMatrix, out _, out var rotation, out _);
+        return rotation;
+    }
+
+    private static float AngleBetween(Vector3 a, Vector3 b) =>
+        MathF.Acos(Math.Clamp(Vector3.Dot(Mathx.SafeNormalize(a, Vector3.UnitY), Mathx.SafeNormalize(b, Vector3.UnitY)), -1, 1));
+
+    private static void SolveTwoBone(Node upper, Node lower, Node hand, Vector3 target)
+    {
+        var a = upper.WorldPosition;
+        var b = lower.WorldPosition;
+        var c = hand.WorldPosition;
+        var lab = Vector3.Distance(a, b);
+        var lcb = Vector3.Distance(b, c);
+        if (lab < 1e-4f || lcb < 1e-4f) return;
+        var lat = Math.Clamp(Vector3.Distance(a, target), .01f, lab + lcb - .01f);
+
+        var acAb0 = AngleBetween(c - a, b - a);
+        var baBc0 = AngleBetween(a - b, c - b);
+        var acAt0 = AngleBetween(c - a, target - a);
+        var acAb1 = MathF.Acos(Math.Clamp((lcb * lcb - lab * lab - lat * lat) / (-2 * lab * lat), -1, 1));
+        var baBc1 = MathF.Acos(Math.Clamp((lat * lat - lab * lab - lcb * lcb) / (-2 * lab * lcb), -1, 1));
+
+        var bendAxis = Vector3.Cross(c - a, b - a);
+        if (bendAxis.LengthSquared() < 1e-8f) return;            // arm fully straight: no bend plane to work in
+        bendAxis = Vector3.Normalize(bendAxis);
+        var swingAxis = Vector3.Cross(c - a, target - a);
+        var r0 = Quaternion.CreateFromAxisAngle(bendAxis, acAb1 - acAb0);
+        var r1 = Quaternion.CreateFromAxisAngle(bendAxis, baBc1 - baBc0);
+        var r2 = swingAxis.LengthSquared() > 1e-8f ? Quaternion.CreateFromAxisAngle(Vector3.Normalize(swingAxis), acAt0) : Quaternion.Identity;
+
+        // New world rotations: upper = r2·r0·Gu, lower inherits that plus r1 about the elbow. Back to local:
+        // L' = L · G⁻¹ · R · G for a world-space delta R.
+        var gu = WorldRotation(upper);
+        var gl = WorldRotation(lower);
+        lower.Rotation = Quaternion.Normalize(lower.Rotation * Quaternion.Inverse(gl) * r1 * gl);
+        upper.Rotation = Quaternion.Normalize(upper.Rotation * Quaternion.Inverse(gu) * (r2 * r0) * gu);
+    }
 
     private string Pick(string preferred, string fallback) => clips.ContainsKey(preferred) ? preferred : fallback;
 
@@ -162,6 +238,7 @@ internal sealed class CharacterVisual
             }
             if (clips.TryGetValue("Climb", out var c)) c.Speed = p.IsMoving ? 1 : 0;
             if (clips.TryGetValue("Run", out var run)) run.Speed = Math.Clamp(horizontal / 5.5f, .6f, 1.6f);
+            if (climbing && Environment.GetEnvironmentVariable("NC_NO_HAND_IK") != "1") PlantHands(p); // env toggle for A/B checks
             return;
         }
         if (hips is null) return;
