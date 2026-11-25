@@ -14,7 +14,7 @@ public static class ScreenshotTour
     {
         var language = Environment.GetEnvironmentVariable("NC_SHOT_LANG");
         if (language is "en" or "id") Loc.Language = language;
-        // TEMP-A11Y-SHOT begin
+        // NC_SHOT_SETTINGS=1: accessibility tour (settings, key capture, high-contrast HUD at 130%).
         if (Environment.GetEnvironmentVariable("NC_SHOT_SETTINGS") == "1")
         {
             var st = shell.Context.Settings;
@@ -38,7 +38,6 @@ public static class ScreenshotTour
             ], 0);
             return;
         }
-        // TEMP-A11Y-SHOT end
         var suffix = Loc.Language == "en" ? "" : "-id";
         var steps = new List<(double Delay, Action Action)>
         {

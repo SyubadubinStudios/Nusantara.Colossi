@@ -20,6 +20,14 @@ public sealed class App : Application
     {
         RequestedThemeVariant = ThemeVariant.Dark;
         Styles.Add(new FluentTheme());
+        // Fluent's sliders, toggles and focus rings follow the accent: make it prada gold, not Windows blue.
+        Resources["SystemAccentColor"] = Theme.PradaColor;
+        Resources["SystemAccentColorLight1"] = Theme.PradaBrightColor;
+        Resources["SystemAccentColorLight2"] = Theme.PradaBrightColor;
+        Resources["SystemAccentColorLight3"] = Theme.PradaBrightColor;
+        Resources["SystemAccentColorDark1"] = Theme.PradaColor;
+        Resources["SystemAccentColorDark2"] = Theme.PradaColor;
+        Resources["SystemAccentColorDark3"] = Theme.PradaColor;
         Name = "Nusantara Colossi";
     }
 
