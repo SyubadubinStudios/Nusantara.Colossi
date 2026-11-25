@@ -73,9 +73,17 @@ adb install src/NusantaraColossi.Android/bin/Release/net10.0-android/com.syubadu
 - Targets API 26+, arm64 and x64, landscape only.
 - Runtime assets ship as `AndroidAsset`s. On first launch for each app version, they are extracted to app storage, because Three.Net's loaders take file paths.
 - Touch controls, Low quality and a 0.8 render scale are on by default.
-- AOT is disabled in the project so it builds on machines without the Mono AOT workload. Enable `RunAOTCompilation` for store builds.
+- Release builds are AOT-compiled (`RunAOTCompilation`), which gives faster start-up and less JIT work on phone CPUs.
+- Play Store bundle (AAB), signed with your upload key. Keep the keystore and passwords out of git:
 
-> Status: the Android APK builds, but it has not yet been run on a device or emulator. See [Progress.md](../../Progress.md).
+  ```bash
+  dotnet publish src/NusantaraColossi.Android -c Release -p:StoreBuild=true     -p:AndroidSigningKeyStore=upload.keystore -p:AndroidSigningKeyAlias=upload     -p:AndroidSigningKeyPass=env:NC_KEY_PASS -p:AndroidSigningStorePass=env:NC_STORE_PASS
+  ```
+
+- Mobile defaults: Low quality, render scale 0.55, and dynamic resolution on every screen (down to 0.35). Far guardian heads use the 6k-triangle LOD (`assets/models/heads/lod1`), and Low quality loads only that LOD.
+- Profiling on a device: `adb shell touch /sdcard/Android/data/com.syubadubin.nusantaracolossi/files/profile` logs frame timings and pointer events to logcat (tag `NC`).
+
+> Status: tested on one low-end tablet (Mali-G51): it starts and its menus respond to a keyboard (touch and audio output not yet confirmed), but it runs at about 3 FPS there. A mid-range or better GPU is needed. See [Progress.md](../../Progress.md).
 
 ## Tests
 

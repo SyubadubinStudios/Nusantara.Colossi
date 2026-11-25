@@ -89,7 +89,7 @@ public sealed class Shell : UserControl, IDisposable
         viewport = new ThreeNetView
         {
             IsRendering = false,
-            RenderScale = quality switch { 0 => .7f, 1 => context.IsMobile ? .8f : 1f, _ => 1f },
+            RenderScale = quality switch { 0 => context.IsMobile ? .55f : .7f, 1 => context.IsMobile ? .8f : 1f, _ => 1f },
             RendererOptions = RendererOptions.Default with
             {
                 BgraOutput = true,
@@ -289,7 +289,8 @@ public sealed class Shell : UserControl, IDisposable
             try { viewport.RenderFrame(); }
             catch (Exception ex) when (ex is ThreeNetException or InvalidOperationException) { OnRenderFailed(ex); }
         }
-        if (Context.Settings.DynamicResolution && Current is HuntScreen) AdaptResolution(now, clock.Elapsed.TotalMilliseconds - t1);
+        // Phones and tablets adapt on every screen: menus also draw the 3D stage behind them.
+        if (Context.Settings.DynamicResolution && (Current is HuntScreen || Context.IsMobile)) AdaptResolution(now, clock.Elapsed.TotalMilliseconds - t1);
         if (Profile)
         {
             var t2 = clock.Elapsed.TotalMilliseconds;
@@ -322,7 +323,8 @@ public sealed class Shell : UserControl, IDisposable
         if (now - lastAdapt < 1.5) return;
         var budget = 1000.0 / Math.Clamp(Context.Settings.FpsCap, 24, 240);
         var scale = viewport.RenderScale;
-        if (renderAverage > budget * 1.1 && scale > .5) scale = Math.Max(.5, scale - .1);
+        var floor = Context.IsMobile ? .35 : .5;
+        if (renderAverage > budget * 1.1 && scale > floor) scale = Math.Max(floor, scale - .1);
         else if (renderAverage < budget * .6 && scale < maxScale) scale = Math.Min(maxScale, scale + .05);
         else return;
         viewport.RenderScale = scale;

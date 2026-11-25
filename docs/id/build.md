@@ -73,9 +73,17 @@ adb install src/NusantaraColossi.Android/bin/Release/net10.0-android/com.syubadu
 - Menargetkan API 26+, arm64 dan x64, mode lanskap saja.
 - Aset runtime dikemas sebagai `AndroidAsset`. Pada peluncuran pertama setiap versi aplikasi, aset diekstrak ke penyimpanan aplikasi, karena loader Three.Net membutuhkan path file.
 - Kontrol sentuh, kualitas Hemat, dan skala render 0,8 aktif secara bawaan.
-- AOT dimatikan di proyek agar bisa di-build tanpa workload Mono AOT. Aktifkan `RunAOTCompilation` untuk build toko aplikasi.
+- Build Release dikompilasi AOT (`RunAOTCompilation`): aplikasi lebih cepat terbuka, dan kerja JIT di CPU ponsel berkurang.
+- Bundle Play Store (AAB), ditandatangani dengan upload key Anda. Jangan masukkan keystore dan kata sandinya ke git:
 
-> Status: APK Android berhasil di-build, tetapi belum dijalankan di perangkat atau emulator. Lihat [Progress.md](../../Progress.md).
+  ```bash
+  dotnet publish src/NusantaraColossi.Android -c Release -p:StoreBuild=true     -p:AndroidSigningKeyStore=upload.keystore -p:AndroidSigningKeyAlias=upload     -p:AndroidSigningKeyPass=env:NC_KEY_PASS -p:AndroidSigningStorePass=env:NC_STORE_PASS
+  ```
+
+- Bawaan mobile: kualitas Low, skala render 0,55, dan resolusi dinamis di semua layar (turun sampai 0,35). Kepala Penjaga yang jauh memakai LOD 6 ribu segitiga (`assets/models/heads/lod1`), dan kualitas Low hanya memuat LOD itu.
+- Profiling di perangkat: `adb shell touch /sdcard/Android/data/com.syubadubin.nusantaracolossi/files/profile` mencatat waktu frame dan event sentuh ke logcat (tag `NC`).
+
+> Status: sudah diuji di satu tablet kelas bawah (Mali-G51). Aplikasi terbuka dan menu merespons keyboard (sentuhan dan keluaran audio belum dipastikan), tetapi hanya sekitar 3 FPS. Butuh GPU kelas menengah ke atas. Lihat [Progress.md](../../Progress.md).
 
 ## Tes
 

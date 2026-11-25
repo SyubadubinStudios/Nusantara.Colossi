@@ -96,6 +96,8 @@ public static class AssetPaths
 
     public static string Model(string name) => Path.Combine(Root, "models", name + ".glb");
     public static string Head(string colossusId) => Path.Combine(Root, "models", "heads", colossusId + ".glb");
+    /// <summary>The far / low-quality head (about 6k triangles, 512 px textures; see process_lods.py).</summary>
+    public static string HeadLod(string colossusId) => Path.Combine(Root, "models", "heads", "lod1", colossusId + ".glb");
     public static string Audio(string name) => Path.Combine(Root, "audio", name + ".wav");
     public static string Voice(string name) => Path.Combine(Root, "audio", "voice", name + ".wav");
     public static string Art(string name) => Path.Combine(Root, "art", name);

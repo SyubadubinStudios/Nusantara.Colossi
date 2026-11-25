@@ -2,6 +2,30 @@
 
 *Dibuat oleh Ariana Mischa Fadhila dari Syubadubin Studios · Made by Ariana Mischa Fadhila of Syubadubin Studios*
 
+## 2026-11-25 (evening): v0.2.0
+
+### Done
+
+- **Android**:
+  - Audio no longer crashes at launch. It mixes offline and streams through `AudioTrack`.
+  - Release builds are AOT-compiled. `-p:StoreBuild=true` produces a Play Store AAB, signed with an upload key passed in as MSBuild properties (never committed).
+  - Mobile render preset: render scale 0.55, and dynamic resolution on every screen down to 0.35. The frame timer runs at Background priority on mobile so touch and layout are not starved.
+  - Device profiling: a `profile` file in the app's external folder logs frame timings and pointer events to logcat (tag `NC`).
+- **Head LODs**: `process_lods.py` builds a 6k-triangle, 512 px version of each head (about 270 KB). It is swapped in beyond about eight head-heights, with hysteresis. Low quality loads only the LOD. Checked in Bromo screenshots at Low and Balanced.
+- **Credits**: a cinematic scrolling roll (see below).
+- **README**: a download section linking every installer, with first-launch steps.
+- **Marketing kit**: in `docs/marketing`.
+- **Version**: 0.2.0 (Android versionCode 2).
+
+### Known gaps (honest status)
+
+- **Guardian bodies** are still sculpted boxes. Generating full-body models needs Rodin 3D, which was not connected in this session. This remains the largest open item.
+- **Android** has only run on a Mali-G51 tablet, at about 3 FPS, measured before the mobile preset. The new preset has not been measured on a device yet. Touch and audio output there are also unconfirmed. Next step: a mid-range phone.
+- **Co-op** has still only been tested over loopback. No second machine was available.
+- **Linux and macOS** builds have not been run on real hardware. This machine has no WSL and there is no Mac.
+- **Arka's hand IK** has not been tuned by eye in play.
+- **The blank first 3D frame** seen once in a screenshot run has not been reproduced.
+
 ## 2026-11-25 (later): Milestones 3–4, repo move, first release
 
 The project moved to `C:\experiment\syubadubin\Nusantara.Colossi` (GitHub: SyubadubinStudios/Nusantara.Colossi).

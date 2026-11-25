@@ -20,7 +20,7 @@ Status legend: ✅ done · 🟡 partial · ⬜ not started
 | 1.8 | UI: title, map, dossier, hunt HUD (grip ring, candi vitality, ability dock, telemetry), pause / victory / defeat, codex, skills, settings, credits, co-op lobby | ✅ |
 | 1.9 | Input: keyboard/mouse, gamepad (menus + rumble), touch | ✅ |
 | 1.10 | Desktop head, screenshot tour, dynamic resolution, GPU-based default quality | ✅ |
-| 1.11 | Android head (asset extraction, touch, landscape) | 🟡 builds; not yet run on a device |
+| 1.11 | Android head (asset extraction, touch, landscape) | 🟡 runs on a device (Mali-G51 tablet); about 3 FPS there, so touch and gameplay still need a stronger device |
 | 1.12 | 2D art (portraits, key art, icon) with Rodin GPT Image Flare | ✅ |
 | 1.13 | 3D models via Rodin (Hunyuan failed on Replicate) + Blender processing: rigged Arka, drone, 8 heads at mobile weight | ✅ |
 | 1.14 | Bilingual docs (README, player guide, design, architecture, build, assets) with screenshots | ✅ |
@@ -28,8 +28,8 @@ Status legend: ✅ done · 🟡 partial · ⬜ not started
 ## Milestone 2: Feel and fidelity
 
 - 🟡 Arka has 15 procedural clips (`arka_anim.py`): Idle, Run, Sprint, Jump, Fall, Climb, ClimbIdle, Hang, Stab, StabRelease, Dodge, Swim, Death, Ride, Glide. Hand IK (analytic two-bone, after the mixer) pulls wrists near the climbing surface onto it; checked only in autopilot screenshots (no broken limbs), not yet tuned by eye in play. Still to do: motion-captured or hand-keyed polish.
-- ⬜ Full guardian body meshes (Rodin → Blender retopology), skinned to the rig's part pivots; keep the box colliders.
-- 🟡 Head GLBs are slimmed to about 1 MB (24k tris, 1K textures); komodo, leviathan and kapal were regenerated as full 3D heads. Still to do: LODs.
+- ⬜ Full guardian body meshes (Rodin → Blender retopology), skinned to the rig's part pivots; keep the box colliders. Blocked on Rodin 3D generation, which was not connected in the v0.2.0 session.
+- ✅ Head GLBs are slimmed to about 1 MB (24k tris, 1K textures); komodo, leviathan and kapal were regenerated as full 3D heads. A 6k-triangle LOD per head (`process_lods.py`, about 270 KB) is swapped in by camera distance, and Low quality loads only the LOD.
 - ✅ Collapse cinematic (a wide orbit scaled to each guardian's height, HUD hidden) and a post-victory close-up on the head behind the result card.
 - ✅ GARUDA voice lines (ElevenLabs) for all 11 lines in Indonesian and English.
 - ✅ Terrain edge dressed with a ring of instanced rock outcrops in every biome except the city, and Raja Ampat's karst towers now stand on the rim instead of being buried in it.
@@ -48,7 +48,9 @@ Status legend: ✅ done · 🟡 partial · ⬜ not started
 
 ## Milestone 4: Platforms and release
 
-- ⬜ Android device QA: performance pass on mid-range phones, AOT build, Play Store packaging.
+- 🟡 Android:
+  - Done: AOT release builds; a Play Store AAB (`-p:StoreBuild=true`, signed with your upload key); a mobile render preset (render scale 0.55, dynamic resolution on every screen); device profiling to logcat; and an audio fix (offline mix through `AudioTrack`).
+  - Still to do: a performance pass on a mid-range phone, plus touch and audio checks on it, then the Play Console listing.
 - 🟡 macOS and Linux packaging scripts plus CI smoke checks. Windows installer (Inno Setup) tested. Linux and macOS not yet run on real machines.
 - 🟡 Co-op: LAN discovery, reconnect and host migration are implemented. `tests/NusantaraColossi.Net.Tests` runs real UDP sessions over loopback: join, snapshots, player and vehicle state, and host migration. Not yet tried across two machines or through NAT.
 - ✅ Accessibility: remappable controls, hold-to-toggle grip, high-contrast HUD, non-colour cues and UI scale (checked in screenshots).

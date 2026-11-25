@@ -6,15 +6,25 @@
     <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
     <ApplicationId>com.syubadubin.nusantaracolossi</ApplicationId>
     <ApplicationTitle>Nusantara Colossi</ApplicationTitle>
-    <ApplicationVersion>1</ApplicationVersion>
-    <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>2</ApplicationVersion>
+    <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
-    <!-- AOT needs the full Mono AOT workload; enable it for store builds where it is installed. -->
-    <RunAOTCompilation>false</RunAOTCompilation>
+    <!-- Release builds are AOT-compiled (faster start-up, less JIT work on weak phone CPUs). -->
+    <RunAOTCompilation Condition="'$(Configuration)' == 'Release'">true</RunAOTCompilation>
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
     <!-- Avalonia's code-built UI needs no XAML compilation. -->
     <EnableDefaultAndroidItems>true</EnableDefaultAndroidItems>
+  </PropertyGroup>
+  <!--
+    Play Store bundle: dotnet publish src/NusantaraColossi.Android -c Release -p:StoreBuild=true
+      -p:AndroidSigningKeyStore=upload.keystore -p:AndroidSigningKeyAlias=upload
+      -p:AndroidSigningKeyPass=env:NC_KEY_PASS -p:AndroidSigningStorePass=env:NC_STORE_PASS
+    Never commit the keystore or its passwords.
+  -->
+  <PropertyGroup Condition="'$(StoreBuild)' == 'true'">
+    <AndroidPackageFormat>aab</AndroidPackageFormat>
+    <AndroidKeyStore Condition="'$(AndroidSigningKeyStore)' != ''">true</AndroidKeyStore>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia.Android" />

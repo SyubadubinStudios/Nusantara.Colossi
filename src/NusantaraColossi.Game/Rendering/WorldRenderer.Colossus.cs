@@ -61,32 +61,18 @@ public sealed partial class WorldRenderer
             boxNodes[i] = mesh;
         }
 
-        // Rodin-generated head sculpture, fitted inside the head's collision box.
+        // Rodin-generated head sculpture, fitted inside the head's collision box. Low quality loads only
+        // the light LOD; higher qualities load both and swap by camera distance (UpdateHeadLod).
         var head = bp.HeadPart;
-        var headPath = AssetPaths.Head(bp.Id);
-        if (head >= 0 && File.Exists(headPath))
+        if (head >= 0)
         {
-            try
-            {
-                var import = Scene.LoadModelCached(headPath, partPivots[head]);
-                var bounds = Scene.GetBounds(import.Root);
-                if (!bounds.IsEmpty)
-                {
-                    var half = bp.Parts[head].Half;
-                    var scale = MathF.Min(half.X * 2.3f / MathF.Max(bounds.Size.X, .01f), MathF.Min(half.Y * 2.3f / MathF.Max(bounds.Size.Y, .01f), half.Z * 2.3f / MathF.Max(bounds.Size.Z, .01f)));
-                    import.Root.Scale = new Vector3(scale);
-                    // Models face -Z; colossi face +Z.
-                    import.Root.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathF.PI);
-                    var center = (bounds.Min + bounds.Max) * .5f * scale;
-                    import.Root.Position = bp.Parts[head].Center - new Vector3(-center.X, center.Y, -center.Z);
-                    import.Root.SetShadowsRecursive(true, true);
-                    boxNodes[head].Scale = new Vector3(.82f); // the carved block stays as the climbable core of the head
-                }
-            }
-            catch (ThreeNetException ex)
-            {
-                AssetWarning = $"{Path.GetFileName(headPath)}: {ex.Message}";
-            }
+            var nearPath = AssetPaths.Head(bp.Id);
+            var farPath = AssetPaths.HeadLod(bp.Id);
+            headNear = Quality > 0 || !File.Exists(farPath) ? PlaceHead(nearPath, head, bp) : null;
+            headFar = File.Exists(farPath) ? PlaceHead(farPath, head, bp) : null;
+            if (headNear is not null && headFar is not null) headFar.Visible = false;
+            if (headNear is not null || headFar is not null)
+                boxNodes[head].Scale = new Vector3(.82f); // the carved block stays as the climbable core of the head
         }
 
         // Cores: a glowing glyph-eye on the face, a halo ring and a light.
@@ -137,8 +123,56 @@ public sealed partial class WorldRenderer
         if ((uint)index < (uint)coreFlash.Length) coreFlash[index] = 1;
     }
 
+    private Node? headNear, headFar;
+    private bool headFarShown;
+
+    /// <summary>Loads a head model under the head pivot, scaled and centred inside the head's box.</summary>
+    private Node? PlaceHead(string path, int head, ColossusBlueprint bp)
+    {
+        if (!File.Exists(path)) return null;
+        try
+        {
+            var import = Scene.LoadModelCached(path, partPivots[head]);
+            var bounds = Scene.GetBounds(import.Root);
+            if (bounds.IsEmpty) return null;
+            var half = bp.Parts[head].Half;
+            var scale = MathF.Min(half.X * 2.3f / MathF.Max(bounds.Size.X, .01f), MathF.Min(half.Y * 2.3f / MathF.Max(bounds.Size.Y, .01f), half.Z * 2.3f / MathF.Max(bounds.Size.Z, .01f)));
+            import.Root.Scale = new Vector3(scale);
+            // Models face -Z; colossi face +Z.
+            import.Root.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathF.PI);
+            var center = (bounds.Min + bounds.Max) * .5f * scale;
+            import.Root.Position = bp.Parts[head].Center - new Vector3(-center.X, center.Y, -center.Z);
+            import.Root.SetShadowsRecursive(true, true);
+            return import.Root;
+        }
+        catch (ThreeNetException ex)
+        {
+            AssetWarning = $"{Path.GetFileName(path)}: {ex.Message}";
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Shows the light head beyond about eight head-heights from the camera, with 15% hysteresis so
+    /// the swap does not flicker at the threshold.
+    /// </summary>
+    private void UpdateHeadLod()
+    {
+        if (headNear is null || headFar is null) return;
+        var bp = Encounter.Colossus.Blueprint;
+        var size = bp.Parts[bp.HeadPart].Half.Y * 2;
+        var distance = Vector3.Distance(Camera.WorldPosition, partPivots[bp.HeadPart].WorldPosition);
+        var threshold = MathF.Max(40, size * 8) * (headFarShown ? .85f : 1f);
+        var far = distance > threshold;
+        if (far == headFarShown) return;
+        headFarShown = far;
+        headNear.Visible = !far;
+        headFar.Visible = far;
+    }
+
     private void UpdateColossus(float dt)
     {
+        UpdateHeadLod();
         var colossus = Encounter.Colossus;
         var world = colossus.PartWorld;
         for (var i = 0; i < partPivots.Length; i++)
