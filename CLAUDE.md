@@ -26,6 +26,7 @@ dotnet build src/NusantaraColossi.Android               # APK (RunAOTCompilation
 Environment variables:
 - `NC_PROFILE=1` prints frame timings: tick/render ms, draw calls, lights, GPU ms.
 - `NC_Q=0|1|2` overrides graphics quality for one run.
+- `NC_SHOW_COLLIDERS=1` keeps the guardians' box meshes visible next to the body models, to see where a climbing collider sticks out of the visible body.
 
 ## Architecture (big picture)
 

@@ -30,6 +30,7 @@ Command-line options:
 | `--lang en\|id` | Language for the screenshot tour |
 | env `NC_PROFILE=1` | Prints frame timings to stderr every 2 s |
 | env `NC_Q=0\|1\|2` | Overrides graphics quality for one run |
+| env `NC_SHOW_COLLIDERS=1` | Shows the guardians' climbing boxes next to their body models |
 
 ## Packaging
 

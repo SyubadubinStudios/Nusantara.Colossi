@@ -2,6 +2,21 @@
 
 *Dibuat oleh Ariana Mischa Fadhila dari Syubadubin Studios · Made by Ariana Mischa Fadhila of Syubadubin Studios*
 
+## 2026-11-26: Orangutan colliders
+
+### Done
+
+- **Orangutan arm colliders now match its body.** The blueprint's arms were pillars from the shoulders to the ground (a knuckle-walker), but the Rodin orangutan's arms hang bent, with the hands at about hip height. The lower half of each arm box was empty air: Arka gripped it and floated, and some foot faces were assigned to the arms and swung with them.
+  - The arm boxes now run from the elbow to the hands (world height about 9–28 m at rest). They are slimmer (half-width 2.2 instead of 3) and 2.5 m further back, so they sit inside the arm instead of around it.
+  - Measured on the rest pose, the share of the arms' climbable faces floating more than 1.5 m off the fur dropped from 73% to 29%. The feet now belong to the legs.
+  - Gameplay effect: the hands no longer touch the ground, so the arms are reached from the torso or from the trees (as the in-game hint already says). The knuckle-slam stomp still lands on the ground under the hand. All 85 tests pass.
+- **`NC_SHOW_COLLIDERS=1`** keeps the box meshes visible next to the body models. This is how the arm problem was found.
+
+### Known gaps (honest status)
+
+- The leg colliders already fit (about 75% of their faces within 0.8 m of the fur, none beyond 1.5 m). In Kalimantan captures Arka can still look slightly off the leg, because the box has corners where the leg is round, and his hands are not IK-placed on the fur yet.
+- The orangutan's torso box fits the hunched back poorly: about 46% of its faces float more than 1.5 m off the fur. The other guardians' colliders have not been measured the same way yet.
+
 ## 2026-11-25 (late night): v0.3.1, body fixes
 
 ### Done

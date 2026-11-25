@@ -163,8 +163,8 @@ public static class Colossi
         b.Add("leg-r", "pelvis", PartRole.LegRight, new(4.5f, -4, 0), new(0, -6, 0), new(2.8f, 6, 2.8f), SurfaceKind.Fur, sides, gaitPhase: .5f, gaitAmplitude: .25f);
         b.Add("torso", "pelvis", PartRole.Torso, new(0, 4, 0), new(0, 11, 0), new(9, 11, 6), SurfaceKind.Fur, tilt: new(.55f, 0, 0));
         b.Add("head", "torso", PartRole.Head, new(0, 22, 1), new(0, 4, 1.5f), new(4.5f, 4.5f, 4.5f), SurfaceKind.Stone, tilt: new(-.5f, 0, 0));
-        b.Add("arm-l", "torso", PartRole.ArmLeft, new(-9, 19, 0), new(-2.6f, -17, 0), new(3, 18, 3), SurfaceKind.Fur, sides, tilt: new(-.55f, 0, 0), gaitPhase: .5f, gaitAmplitude: .38f);
-        b.Add("arm-r", "torso", PartRole.ArmRight, new(9, 19, 0), new(2.6f, -17, 0), new(3, 18, 3), SurfaceKind.Fur, sides, tilt: new(-.55f, 0, 0), gaitPhase: 0, gaitAmplitude: .38f);
+        b.Add("arm-l", "torso", PartRole.ArmLeft, new(-9, 19, 0), new(-2.6f, -17.5f, -2.5f), new(2.2f, 9.5f, 2.2f), SurfaceKind.Fur, sides, tilt: new(-.55f, 0, 0), gaitPhase: .5f, gaitAmplitude: .38f);
+        b.Add("arm-r", "torso", PartRole.ArmRight, new(9, 19, 0), new(2.6f, -17.5f, -2.5f), new(2.2f, 9.5f, 2.2f), SurfaceKind.Fur, sides, tilt: new(-.55f, 0, 0), gaitPhase: 0, gaitAmplitude: .38f);
         return new()
         {
             Id = "orangutan-purba", Archetype = Archetype.Biped, Parts = b.Build(),

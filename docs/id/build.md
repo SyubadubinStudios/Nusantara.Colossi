@@ -30,6 +30,7 @@ Opsi baris perintah:
 | `--lang en\|id` | Bahasa untuk tur tangkapan layar |
 | env `NC_PROFILE=1` | Mencetak waktu frame ke stderr setiap 2 detik |
 | env `NC_Q=0\|1\|2` | Mengganti kualitas grafis untuk satu kali jalan |
+| env `NC_SHOW_COLLIDERS=1` | Menampilkan kotak panjat Penjaga di samping model tubuhnya |
 
 ## Pengemasan
 

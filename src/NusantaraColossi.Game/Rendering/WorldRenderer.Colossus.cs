@@ -69,8 +69,10 @@ public sealed partial class WorldRenderer
         if (bodyNear > 0 && bodyFar > 0) SetVisible(bodyFarParts, false);
         var covered = new bool[bp.Parts.Length];
         foreach (var (index, _) in bodyNearParts.Concat(bodyFarParts)) covered[index] = true;
+        // NC_SHOW_COLLIDERS=1 keeps the box meshes too, to check where the colliders stick out of the body.
+        var showColliders = Environment.GetEnvironmentVariable("NC_SHOW_COLLIDERS") == "1";
         for (var i = 0; i < covered.Length; i++)
-            if (covered[i]) boxNodes[i].DetachMesh();
+            if (covered[i] && !showColliders) boxNodes[i].DetachMesh();
 
         // Without a body model: the Rodin head sculpture, fitted inside the head's collision box. Low
         // quality loads only the light LOD; higher qualities load both and swap by camera distance.
